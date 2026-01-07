@@ -11,7 +11,7 @@ import { formatCount, formatUnit } from "~/lib/utils";
 import { ensureDefaultChartTopicField } from "~/middleware/searchValidationHelpers";
 import { orpc } from "~/orpc/client";
 
-export const Route = createFileRoute("/_public/view-data/$instanceId")({
+export const Route = createFileRoute("/_public/view-data/$instanceId/")({
   component: RouteComponent,
   validateSearch: singleInstanceRouteSearchSchema,
   beforeLoad: ({ search }) => {
@@ -63,6 +63,12 @@ function RouteComponent() {
     }),
   );
 
+  const extractedSessions = useQuery(
+    orpc.loadingSessions.getExtractedSessions.queryOptions({
+      input: { instanceIds: [instanceId] },
+    }),
+  );
+
   return (
     <>
       <PageTitle>Deine Datenübersicht</PageTitle>
@@ -83,6 +89,7 @@ function RouteComponent() {
               search: (prev) => ({ ...prev, chartTopic, chartTopicField }),
             })
           }
+          extractedSessions={extractedSessions.data}
           gaps={gaps.data}
         />
         <MetadataGraph

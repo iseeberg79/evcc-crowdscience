@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import type { ReactNode } from "react";
+import { type ReactNode } from "react";
 import inter from "@fontsource-variable/inter?url";
 import { type QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";

@@ -15,5 +15,7 @@ export function generateSessionRangeHash(sessionRange: ExtractedSessionRange) {
 }
 
 export function getSessionUrl(session: ExtractedSession) {
-  return `/dashboard/instances/${session.instanceId}/session?sessionRangeHash="${session.sessionRangeHash}"`;
+  const onDashboard = window.location.pathname.includes("/dashboard");
+
+  return `${onDashboard ? "/dashboard/instances" : "/view-data"}/${session.instanceId}/session?sessionRangeHash="${session.sessionRangeHash}"`;
 }

@@ -52,7 +52,7 @@ function HeroStat({
       >
         <Icon className="size-5" />
       </div>
-      <div className="min-w-0">
+      <div className="flex min-w-0 flex-col">
         <p className="text-xs text-muted-foreground">{label}</p>
         <p className="truncate text-xl font-semibold">{value}</p>
         {subValue && (
@@ -174,7 +174,7 @@ export function SessionInfo({
                       <Badge
                         variant="secondary"
                         className={cn(
-                          "ml-1 text-xs",
+                          "-mt-2 ml-1 text-xs",
                           priceComparison.isBetter
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700",

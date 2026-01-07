@@ -2,7 +2,6 @@ import { type ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRightIcon } from "lucide-react";
 
-import { DataFlowOverview } from "~/components/data-flow-overview";
 import { PublicSiteFooter } from "~/components/public-site-footer";
 import { PublicSiteHeader } from "~/components/public-site-header";
 import {
@@ -45,7 +44,7 @@ function HomePageSection({
     >
       <div
         className={cn(
-          "max-w-(--max-content-width) mx-auto w-full",
+          "mx-auto w-full max-w-(--max-content-width)",
           contentClassName,
         )}
       >
@@ -59,18 +58,17 @@ function Home() {
   return (
     <>
       <PublicSiteHeader />
-
-      <div className="bg-background min-h-screen">
+      <div className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="bg-muted relative flex min-h-[calc(50svh-4rem)] items-center justify-center overflow-hidden px-4 py-16 sm:px-6 lg:px-10">
+        <section className="relative flex min-h-[calc(50svh-4rem)] items-center justify-center overflow-hidden bg-muted px-4 py-16 sm:px-6 lg:px-10">
           <FlickeringGrid className="absolute h-full w-[calc(100svw+100px)]" />
           <div className="z-10 p-8">
-            <div className="max-w-(--max-content-width) z-10 mx-auto w-full space-y-8">
+            <div className="z-10 mx-auto w-full max-w-(--max-content-width) space-y-8">
               <div className="space-y-4 text-center">
-                <h1 className="text-balance text-4xl font-bold sm:text-5xl md:text-6xl lg:text-7xl">
+                <h1 className="text-4xl font-bold text-balance sm:text-5xl md:text-6xl lg:text-7xl">
                   Deine evcc Daten für die Energiewende
                 </h1>
-                <p className="text-muted-foreground mx-auto max-w-3xl text-balance text-lg sm:text-xl md:text-2xl">
+                <p className="mx-auto max-w-3xl text-lg text-balance text-muted-foreground sm:text-xl md:text-2xl">
                   Crowdscience-Projekt der{" "}
                   <a
                     href="https://solar.htw-berlin.de/"
@@ -136,46 +134,46 @@ function Home() {
           <HomePageSection id="motivation">
             <div className="mx-auto max-w-3xl space-y-6">
               <H2>Warum brauchen wir deine Daten?</H2>
-              <P className="text-muted-foreground text-lg">
+              <P className="text-lg text-muted-foreground">
                 In unserer Energieforschung von dezentralen Energiesystemen sind
                 wir auf Zeitreihen-Daten angewiesen. Sie dienen als
                 Eingangsdaten von Simulationen und helfen uns die Systeme und
                 Interaktionen aus Solaranlage, Batterie, Elektroauto und/oder
                 Wärmepumpen besser zu verstehen.
               </P>
-              <P className="text-muted-foreground text-lg">
+              <P className="text-lg text-muted-foreground">
                 Nur so können wir Lösungen entwickeln und technische
                 Herausforderungen antizipieren, die wir für die Energiewende
                 brauchen. Hinter unserer Arbeit steht dabei keine Firma und kein
                 Profitinteresse sondern die Überzeugung, dass wir mit unserer
                 Forschung die Energiewende unterstützen wollen.
               </P>
-              <P className="text-muted-foreground text-lg">
+              <P className="text-lg text-muted-foreground">
                 Das Problem: Es gibt aktuell keinen vergleichbaren offenen
                 Datensatz mit realen Daten aus dezentralen Energiesystemen.
               </P>
             </div>
           </HomePageSection>
 
-          <Separator className="max-w-(--max-content-width) mx-auto w-full" />
+          <Separator className="mx-auto w-full max-w-(--max-content-width)" />
 
           {/* Das ist der Plan */}
           <HomePageSection id="plan">
             <div className="mx-auto max-w-3xl space-y-6">
               <H2>Das ist der Plan</H2>
-              <P className="text-muted-foreground text-lg">
+              <P className="text-lg text-muted-foreground">
                 Als Nutzende von evcc hantiert ihr täglich mit diesen für uns
                 zentralen Daten. Wir möchten unsere Forschung und die Forschung
                 anderer gerne mit eueren Datenspenden voranbringen.
               </P>
-              <P className="text-muted-foreground text-lg">
+              <P className="text-lg text-muted-foreground">
                 Hierfür wollen wir anonymisierte Daten eurer evcc aufzeichnen
                 und als offenen Datensatz zur Verfügung stellen. Dies wäre ein
                 einmaliger Datensatz, der je nach Anzahl an Teilnehmenden einen
                 wichtigen Beitrag zur dezentralen Energiesystemforschung leisten
                 kann.
               </P>
-              <P className="text-muted-foreground text-lg">
+              <P className="text-lg text-muted-foreground">
                 Wichtig ist uns: Neben einer wünschenswerten Detailtiefe des
                 Datensatzes sollen durch strikte Anonymisierung keine Abstriche
                 beim Datenschutz gemacht werden!
@@ -183,7 +181,7 @@ function Home() {
             </div>
           </HomePageSection>
 
-          <Separator className="max-w-(--max-content-width) mx-auto w-full" />
+          <Separator className="mx-auto w-full max-w-(--max-content-width)" />
 
           {/* Mehrwert */}
           <HomePageSection id="mehrwert">
@@ -213,25 +211,25 @@ function Home() {
             </div>
           </HomePageSection>
 
-          <Separator className="max-w-(--max-content-width) mx-auto w-full" />
+          <Separator className="mx-auto w-full max-w-(--max-content-width)" />
 
           {/* Wie funktioniert's */}
           <HomePageSection id="so-funktionierts" className="bg-muted/30">
             <div className="mx-auto max-w-3xl space-y-6">
               <H2>Ablauf</H2>
-              <P className="text-muted-foreground text-lg">
+              <P className="text-lg text-muted-foreground">
                 Wir haben uns für eine Token-basierte Anmeldung und
                 MQTT-Datenspende entschieden. Die Daten werden in InfluxDB
                 gespeichert und sind auf der Webseite unter Angabe des Tokens
                 für euch einsehbar.
               </P>
-              <P className="text-muted-foreground text-lg">
+              <P className="text-lg text-muted-foreground">
                 Alle Daten aus evcc, die persönliche Informationen enthalten
                 könnten werden nicht gespeichert. Wer die Zuordnung des Tokens
                 zu euch nicht kennt kann die Daten nicht zuordnen
                 (Pseudonymisierung, die nur euch bekannt ist).
               </P>
-              <P className="text-muted-foreground text-lg">
+              <P className="text-lg text-muted-foreground">
                 Wenn ihr nicht mehr mitmachen wollt, beendet ihr die Datenspende
                 einfach, indem ihr unseren MQTT Broker wieder aus evcc entfernt.
                 Mitglieder der Forschungsgruppe haben die Möglichkeit, alle
@@ -248,16 +246,16 @@ function Home() {
             </div>
           </HomePageSection>
 
-          <Separator className="max-w-(--max-content-width) mx-auto w-full" />
+          <Separator className="mx-auto w-full max-w-(--max-content-width)" />
 
           {/* Datenschutz */}
           <HomePageSection id="datenschutz">
             <div className="mx-auto max-w-3xl space-y-6">
               <H2>Datenschutz & Anonymisierung</H2>
-              <P className="text-muted-foreground text-lg">
+              <P className="text-lg text-muted-foreground">
                 Deine Anonymität hat höchste Priorität:
               </P>
-              <ul className="text-muted-foreground ml-6 list-disc space-y-2 text-lg">
+              <ul className="ml-6 list-disc space-y-2 text-lg text-muted-foreground">
                 <li>
                   Keine Speicherung personenbezogener Informationen aus evcc
                 </li>
@@ -278,13 +276,13 @@ function Home() {
             </div>
           </HomePageSection>
 
-          <Separator className="max-w-(--max-content-width) mx-auto w-full" />
+          <Separator className="mx-auto w-full max-w-(--max-content-width)" />
 
           {/* Quote from Research */}
           <HomePageSection className="bg-muted/30">
             <figure>
               <svg
-                className="text-muted-foreground/50 mx-auto mb-6 h-12 w-12"
+                className="mx-auto mb-6 h-12 w-12 text-muted-foreground/50"
                 aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="currentColor"
@@ -292,7 +290,7 @@ function Home() {
               >
                 <path d="M6 0H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4v1a3 3 0 0 1-3 3H2a1 1 0 0 0 0 2h1a5.006 5.006 0 0 0 5-5V2a2 2 0 0 0-2-2Zm10 0h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4v1a3 3 0 0 1-3 3h-1a1 1 0 0 0 0 2h1a5.006 5.006 0 0 0 5-5V2a2 2 0 0 0-2-2Z" />
               </svg>
-              <blockquote className="max-w-11/12 text-muted-foreground md:max-w-2/3 mx-auto text-balance text-center text-xl font-medium leading-8 md:text-2xl">
+              <blockquote className="mx-auto max-w-11/12 text-center text-xl leading-8 font-medium text-balance text-muted-foreground md:max-w-2/3 md:text-2xl">
                 "Im Forschungsprojekt{" "}
                 <a
                   href="https://solar.htw-berlin.de/forschungsgruppe/wallbox-inspektion/"
@@ -320,7 +318,7 @@ function Home() {
                         Joseph Bergner
                       </a>
                     </div>
-                    <div className="text-muted-foreground mt-1 text-sm">
+                    <div className="mt-1 text-sm text-muted-foreground">
                       Wissenschaftlicher Mitarbeiter an der HTW Berlin
                     </div>
                   </div>
@@ -329,7 +327,7 @@ function Home() {
             </figure>
           </HomePageSection>
 
-          <Separator className="max-w-(--max-content-width) mx-auto w-full" />
+          <Separator className="mx-auto w-full max-w-(--max-content-width)" />
 
           {/* FAQ */}
           <HomePageSection id="faq">
@@ -410,13 +408,13 @@ function Home() {
             </div>
           </HomePageSection>
 
-          <Separator className="max-w-(--max-content-width) mx-auto w-full" />
+          <Separator className="mx-auto w-full max-w-(--max-content-width)" />
 
           {/* Community Feedback */}
           <HomePageSection id="feedback" className="bg-muted/30">
             <div className="mx-auto max-w-3xl space-y-6 text-center">
               <H2>Wir sind gespannt auf euer Feedback!</H2>
-              <P className="text-muted-foreground text-lg">
+              <P className="text-lg text-muted-foreground">
                 Dieses Projekt lebt von der Community. Teilt eure Wünsche,
                 Vorschläge und Ideen mit uns – gemeinsam machen wir es besser!
               </P>
@@ -446,7 +444,7 @@ function Home() {
           >
             <div className="mx-auto max-w-3xl space-y-6 text-center">
               <H2 className="text-primary-foreground">Jetzt mitmachen!</H2>
-              <P className="text-primary-foreground/90 text-lg">
+              <P className="text-lg text-primary-foreground/90">
                 Gemeinsam schaffen wir einen einzigartigen Datensatz für die
                 Energiewendeforschung. Deine Daten helfen, die Zukunft
                 nachhaltiger Energiesysteme zu gestalten.
