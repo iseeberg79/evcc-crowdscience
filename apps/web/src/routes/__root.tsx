@@ -1,15 +1,15 @@
 /// <reference types="vite/client" />
 import { type ReactNode } from "react";
 import inter from "@fontsource-variable/inter?url";
+import { TanStackDevtools } from "@tanstack/react-devtools";
 import { type QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import {
   createRootRouteWithContext,
   HeadContent,
-  Outlet,
   Scripts,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import * as z from "zod";
 
 import { sessionQueryOptions } from "~/auth";
@@ -20,7 +20,6 @@ import { timeRangeUrlSchema } from "~/lib/globalSchemas";
 import css from "~/styles/app.css?url";
 
 const isProduction = env.PUBLIC_BASE_URL === "https://evcc-crowdscience.de";
-
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
   routeTitle?: string | false;
@@ -30,7 +29,7 @@ export const Route = createRootRouteWithContext<{
     timeRange: timeRangeUrlSchema,
     expandedKey: z.string().optional(),
   }),
-  component: RootComponent,
+  shellComponent: RootDocument,
   notFoundComponent: NotFound,
   errorComponent: DefaultCatchBoundary,
   beforeLoad: async ({ context }) => {
@@ -80,16 +79,29 @@ export const Route = createRootRouteWithContext<{
   }),
 });
 
-function RootComponent() {
+function RootDocument({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
       <body className="flex min-h-screen flex-col font-inter">
-        <Outlet />
-        <TanStackRouterDevtools />
-        <ReactQueryDevtools />
+        {children}
+        <TanStackDevtools
+          config={{
+            position: "bottom-right",
+          }}
+          plugins={[
+            {
+              name: "Tanstack Router",
+              render: <TanStackRouterDevtoolsPanel />,
+            },
+            {
+              name: "Tanstack Query",
+              render: <ReactQueryDevtoolsPanel />,
+            },
+          ]}
+        />
         <Scripts />
       </body>
     </html>

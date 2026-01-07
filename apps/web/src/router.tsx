@@ -1,5 +1,5 @@
 import { QueryClient } from "@tanstack/react-query";
-import { createRouter as createTanStackRouter } from "@tanstack/react-router";
+import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
 import { DefaultCatchBoundary } from "~/components/default-catch-boundary";
@@ -27,7 +27,7 @@ export function getRouter() {
     },
   });
 
-  const router = createTanStackRouter({
+  const router = createRouter({
     routeTree,
     context: { queryClient },
     defaultPreload: "intent",
