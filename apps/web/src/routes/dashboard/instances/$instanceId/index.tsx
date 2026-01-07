@@ -17,17 +17,22 @@ import { InstanceOverview } from "~/components/dashboard-tiles/instance-overview
 import { LoadingButton } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { useTimeSeriesSettings } from "~/hooks/use-timeseries-settings";
+import { singleInstanceRouteSearchSchema } from "~/lib/globalSchemas";
 import { formatCount, formatUnit } from "~/lib/utils";
+import { ensureDefaultChartTopicField } from "~/middleware/searchValidationHelpers";
 import { orpc } from "~/orpc/client";
 
 export const Route = createFileRoute("/dashboard/instances/$instanceId/")({
   component: RouteComponent,
-  beforeLoad: async ({ context }) => {
+  validateSearch: singleInstanceRouteSearchSchema,
+  beforeLoad: async ({ context, search }) => {
     const instance = await context.queryClient.ensureQueryData(
       orpc.instances.getById.queryOptions({
         input: { id: context.instance.id },
       }),
     );
+    ensureDefaultChartTopicField(search.chartTopic, search.chartTopicField);
+
     return {
       instance,
       routeTitle: false,

@@ -149,6 +149,7 @@ export function ChargingHourHistogram({
         onChartReady={(instance) => {
           instance.on("click", handleClick);
         }}
+        replaceMerge={["series"]}
         style={{
           width: "100%",
           height: "100%",

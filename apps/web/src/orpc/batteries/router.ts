@@ -4,6 +4,7 @@ import * as z from "zod";
 import { instanceCountsAsActiveDays } from "~/constants";
 import { influxDb } from "~/db/client";
 import { env } from "~/env";
+import { instanceIdsFilterSchema } from "~/lib/globalSchemas";
 import { buildFluxQuery } from "~/lib/influx-query";
 import { influxRowBaseSchema, type MetaData } from "../types";
 
@@ -62,7 +63,7 @@ export const batteriesRouter = {
 
       return metaData;
     }),
-  getData: os.handler(async () => {
+  getData: os.input(instanceIdsFilterSchema).handler(async ({ input }) => {
     const rowSchema = z.object({
       componentId: z.string(),
       instance: z.string(),
@@ -87,11 +88,18 @@ export const batteriesRouter = {
       >
     > = {};
 
+    const instanceIdsJson = JSON.stringify(input.instanceIds ?? []);
     const query = buildFluxQuery(
-      `from(bucket: {{bucket}})
+      `
+      import "array"
+      instanceIds = ${instanceIdsJson}
+
+      from(bucket: {{bucket}})
         |> range(start: {{rangeStart}})
         |> filter(fn: (r) => r["_measurement"] == "battery")
-        |> last()`,
+        |> last()
+        ${input.instanceIds?.length ? `|> filter(fn: (r) => contains(value: r["instance"], set: instanceIds))` : ""}
+      `,
       {
         bucket: env.INFLUXDB_BUCKET,
         rangeStart: `-${instanceCountsAsActiveDays}d`,
@@ -116,7 +124,7 @@ export const batteriesRouter = {
           res[parsedRow.data.instance][parsedRow.data.componentId] = {};
         }
 
-        //@ts-expect-error problem with assignment to partial and field types
+        // @ts-expect-error problem with assignment to partial and field types
         // but zod makes sure that the field is valid
         res[parsedRow.data.instance][parsedRow.data.componentId][
           parsedRow.data._field

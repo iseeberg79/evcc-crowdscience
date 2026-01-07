@@ -37,7 +37,7 @@ export const Route = createFileRoute("/dashboard/")({
         }),
       ),
       context.queryClient.ensureQueryData(
-        orpc.batteries.getData.queryOptions(),
+        orpc.batteries.getData.queryOptions({ input: { instanceIds } }),
       ),
     ];
     await Promise.allSettled(promises);
@@ -46,13 +46,14 @@ export const Route = createFileRoute("/dashboard/")({
 
 function RouteComponent() {
   const { filteredInstances } = useInstancesFilter();
+  const instanceIds = filteredInstances.map((instance) => instance.id);
 
   const { data: batteryData } = useSuspenseQuery(
-    orpc.batteries.getData.queryOptions(),
+    orpc.batteries.getData.queryOptions({ input: { instanceIds } }),
   );
   const { data: loadingSessions } = useSuspenseQuery(
     orpc.loadingSessions.getExtractedSessions.queryOptions({
-      input: { instanceIds: filteredInstances.map((instance) => instance.id) },
+      input: { instanceIds },
     }),
   );
 
@@ -107,12 +108,12 @@ function RouteComponent() {
         </p>
       </DashboardGraph>
       <ChargeSocHistogram
-        className="lg:col-span-8"
+        className="md:col-span-4 lg:row-span-2 xl:col-span-6"
         extractedSessions={loadingSessions}
       />
       <ChargingHourHistogram
         className="md:col-span-4 lg:col-span-4 xl:col-span-6"
-        instanceIds={filteredInstances.map((instance) => instance.id)}
+        instanceIds={instanceIds}
         heightConfig={{ min: 200, max: 400 }}
       />
     </div>

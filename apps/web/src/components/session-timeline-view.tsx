@@ -6,7 +6,6 @@ import ReactECharts from "echarts-for-react";
 
 import { LoadingSpinnerCard } from "~/components/loading-spinner-card";
 import { SessionInfo } from "~/components/session-info";
-import { TimeSeriesSettingsPicker } from "~/components/time-series-settings-picker";
 import {
   Card,
   CardContent,
@@ -15,13 +14,14 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { getChartColor, sharedChartOptions } from "~/constants";
-import { useTimeSeriesSettings } from "~/hooks/use-timeseries-settings";
 import { orpc } from "~/orpc/client";
 import type { ExtractedSession } from "~/orpc/loadingSessions/types";
 
 export const excludedFields = [
   "planProjectedEnd",
   "planProjectedStart",
+  "smartCostNextStart",
+  "smartCostNextEnd",
   "effectivePlanTime",
 ];
 
@@ -30,8 +30,6 @@ interface SessionTimelineViewProps {
 }
 
 export function SessionTimelineView({ session }: SessionTimelineViewProps) {
-  const { timeRange } = useTimeSeriesSettings();
-
   // Fetch historical sessions for comparison
   const { data: historicalSessions } = useQuery(
     orpc.loadingSessions.getExtractedSessions.queryOptions({
@@ -72,7 +70,7 @@ export function SessionTimelineView({ session }: SessionTimelineViewProps) {
         timeRange: {
           start: session.startTime.getTime(),
           end: session.endTime.getTime(),
-          windowMinutes: timeRange.windowMinutes,
+          windowMinutes: 0,
         },
       },
       select: (data) =>
@@ -187,7 +185,6 @@ export function SessionTimelineView({ session }: SessionTimelineViewProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <TimeSeriesSettingsPicker />
           <div className="relative aspect-video max-h-[1000px] min-h-[300px]">
             {isLoading && <LoadingSpinnerCard message="Loading chart data" />}
             {data?.length && data.length > 0 ? (
@@ -210,4 +207,3 @@ export function SessionTimelineView({ session }: SessionTimelineViewProps) {
     </div>
   );
 }
-
