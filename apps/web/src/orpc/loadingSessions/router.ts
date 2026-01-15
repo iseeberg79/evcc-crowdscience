@@ -12,10 +12,12 @@ import { authedProcedure } from "../middleware";
 import { extractSessionDetails } from "./extractDetails";
 import { extractSessionRanges } from "./extractRanges";
 import { importSessions } from "./import";
+import { extractedSessionSchema } from "./types";
 
 export const loadingSessionsRouter = {
   getExtractedSessions: os
     .input(instanceIdsFilterSchema)
+    .output(z.array(extractedSessionSchema))
     .handler(({ input }) => {
       return sqliteDb.query.extractedLoadingSessions.findMany({
         where: input.instanceIds?.length

@@ -269,17 +269,24 @@ export function InstanceTimeSeriesEcharts({
         type: "line",
         markArea: {
           emphasis: { disabled: true },
-          data: gaps?.map((gap) => [
-            {
-              xAxis: gap.start.getTime(),
-              itemStyle: {
-                color: "rgba(239, 68, 68, 0.5)",
-                borderColor: "rgba(239, 68, 68, 0.5)",
-                borderWidth: 1,
+          data: gaps?.map((gap) => {
+            // Convert string dates to Date objects if needed
+            const start =
+              gap.start instanceof Date ? gap.start : new Date(gap.start);
+            const end = gap.end instanceof Date ? gap.end : new Date(gap.end);
+
+            return [
+              {
+                xAxis: start.getTime(),
+                itemStyle: {
+                  color: "rgba(239, 68, 68, 0.5)",
+                  borderColor: "rgba(239, 68, 68, 0.5)",
+                  borderWidth: 1,
+                },
               },
-            },
-            { xAxis: gap.end.getTime() },
-          ]),
+              { xAxis: end.getTime() },
+            ];
+          }),
         },
       } as const,
     ],

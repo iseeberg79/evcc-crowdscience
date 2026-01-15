@@ -2,6 +2,7 @@ import path from "path";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
+import macros from "unplugin-macros/vite";
 import { defineConfig } from "vite";
 import { analyzer } from "vite-bundle-analyzer";
 import devtoolsJson from "vite-plugin-devtools-json";

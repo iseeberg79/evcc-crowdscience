@@ -1,0 +1,234 @@
+{
+  "batteries": {
+    "getMetaData": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "getData": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    }
+  },
+  "chargingStats": {
+    "getChargingHourHistogram": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    }
+  },
+  "instances": {
+    "generateId": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "getById": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "getOverview": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "getLatestUpdate": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "getGaps": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "setIgnored": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    }
+  },
+  "jobs": {
+    "extractAndSaveSessions": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    }
+  },
+  "loadingSessions": {
+    "getExtractedSessions": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "getSessionByHash": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "getImportedSessions": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "deleteImportedSessions": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "deleteExtractedSessions": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "importSessions": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "extractSessionRanges": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "extractSessionDetails": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    }
+  },
+  "loadpoints": {
+    "getMetaData": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    }
+  },
+  "pv": {
+    "getMetaData": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    }
+  },
+  "sites": {
+    "getMetaDataValues": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "getStatistics": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    }
+  },
+  "timeSeries": {
+    "getData": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    }
+  },
+  "users": {
+    "get": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "getMultiple": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "update": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "create": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "delete": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    },
+    "undoDelete": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    }
+  },
+  "vehicles": {
+    "getMetaData": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {}
+      }
+    }
+  }
+}

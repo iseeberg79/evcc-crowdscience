@@ -27,5 +27,8 @@
   },
   "peerDependencies": {
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@orpc/contract": "^1.13.4"
   }
 }

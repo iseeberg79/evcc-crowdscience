@@ -18,13 +18,14 @@ import { Route as DashboardUsersRouteImport } from './routes/dashboard/users'
 import { Route as DashboardImportRouteImport } from './routes/dashboard/import'
 import { Route as ApiSeedRouteImport } from './routes/api/seed'
 import { Route as ApiHealthcheckRouteImport } from './routes/api/healthcheck'
+import { Route as ApiDocsRouteImport } from './routes/api/docs'
+import { Route as ApiSplatRouteImport } from './routes/api/$'
 import { Route as PublicMitmachenRouteImport } from './routes/_public/mitmachen'
 import { Route as PublicImpressumRouteImport } from './routes/_public/impressum'
 import { Route as PublicDatenschutzRouteImport } from './routes/_public/datenschutz'
 import { Route as DashboardInstancesRouteRouteImport } from './routes/dashboard/instances/route'
 import { Route as DashboardInstancesIndexRouteImport } from './routes/dashboard/instances/index'
 import { Route as PublicViewDataIndexRouteImport } from './routes/_public/view-data/index'
-import { Route as ApiOrpcSplatRouteImport } from './routes/api/orpc.$'
 import { Route as DashboardInstancesInstanceIdRouteRouteImport } from './routes/dashboard/instances/$instanceId/route'
 import { Route as DashboardInstancesInstanceIdIndexRouteImport } from './routes/dashboard/instances/$instanceId/index'
 import { Route as PublicViewDataInstanceIdIndexRouteImport } from './routes/_public/view-data/$instanceId/index'
@@ -76,6 +77,16 @@ const ApiHealthcheckRoute = ApiHealthcheckRouteImport.update({
   path: '/api/healthcheck',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDocsRoute = ApiDocsRouteImport.update({
+  id: '/api/docs',
+  path: '/api/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSplatRoute = ApiSplatRouteImport.update({
+  id: '/api/$',
+  path: '/api/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PublicMitmachenRoute = PublicMitmachenRouteImport.update({
   id: '/mitmachen',
   path: '/mitmachen',
@@ -105,11 +116,6 @@ const PublicViewDataIndexRoute = PublicViewDataIndexRouteImport.update({
   id: '/view-data/',
   path: '/view-data/',
   getParentRoute: () => PublicRouteRoute,
-} as any)
-const ApiOrpcSplatRoute = ApiOrpcSplatRouteImport.update({
-  id: '/api/orpc/$',
-  path: '/api/orpc/$',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardInstancesInstanceIdRouteRoute =
   DashboardInstancesInstanceIdRouteRouteImport.update({
@@ -156,13 +162,14 @@ export interface FileRoutesByFullPath {
   '/datenschutz': typeof PublicDatenschutzRoute
   '/impressum': typeof PublicImpressumRoute
   '/mitmachen': typeof PublicMitmachenRoute
+  '/api/$': typeof ApiSplatRoute
+  '/api/docs': typeof ApiDocsRoute
   '/api/healthcheck': typeof ApiHealthcheckRoute
   '/api/seed': typeof ApiSeedRoute
   '/dashboard/import': typeof DashboardImportRoute
   '/dashboard/users': typeof DashboardUsersRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/instances/$instanceId': typeof DashboardInstancesInstanceIdRouteRouteWithChildren
-  '/api/orpc/$': typeof ApiOrpcSplatRoute
   '/view-data': typeof PublicViewDataIndexRoute
   '/dashboard/instances/': typeof DashboardInstancesIndexRoute
   '/view-data/$instanceId/session': typeof PublicViewDataInstanceIdSessionRoute
@@ -177,12 +184,13 @@ export interface FileRoutesByTo {
   '/datenschutz': typeof PublicDatenschutzRoute
   '/impressum': typeof PublicImpressumRoute
   '/mitmachen': typeof PublicMitmachenRoute
+  '/api/$': typeof ApiSplatRoute
+  '/api/docs': typeof ApiDocsRoute
   '/api/healthcheck': typeof ApiHealthcheckRoute
   '/api/seed': typeof ApiSeedRoute
   '/dashboard/import': typeof DashboardImportRoute
   '/dashboard/users': typeof DashboardUsersRoute
   '/dashboard': typeof DashboardIndexRoute
-  '/api/orpc/$': typeof ApiOrpcSplatRoute
   '/view-data': typeof PublicViewDataIndexRoute
   '/dashboard/instances': typeof DashboardInstancesIndexRoute
   '/view-data/$instanceId/session': typeof PublicViewDataInstanceIdSessionRoute
@@ -201,13 +209,14 @@ export interface FileRoutesById {
   '/_public/datenschutz': typeof PublicDatenschutzRoute
   '/_public/impressum': typeof PublicImpressumRoute
   '/_public/mitmachen': typeof PublicMitmachenRoute
+  '/api/$': typeof ApiSplatRoute
+  '/api/docs': typeof ApiDocsRoute
   '/api/healthcheck': typeof ApiHealthcheckRoute
   '/api/seed': typeof ApiSeedRoute
   '/dashboard/import': typeof DashboardImportRoute
   '/dashboard/users': typeof DashboardUsersRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/instances/$instanceId': typeof DashboardInstancesInstanceIdRouteRouteWithChildren
-  '/api/orpc/$': typeof ApiOrpcSplatRoute
   '/_public/view-data/': typeof PublicViewDataIndexRoute
   '/dashboard/instances/': typeof DashboardInstancesIndexRoute
   '/_public/view-data/$instanceId/session': typeof PublicViewDataInstanceIdSessionRoute
@@ -226,13 +235,14 @@ export interface FileRouteTypes {
     | '/datenschutz'
     | '/impressum'
     | '/mitmachen'
+    | '/api/$'
+    | '/api/docs'
     | '/api/healthcheck'
     | '/api/seed'
     | '/dashboard/import'
     | '/dashboard/users'
     | '/dashboard/'
     | '/dashboard/instances/$instanceId'
-    | '/api/orpc/$'
     | '/view-data'
     | '/dashboard/instances/'
     | '/view-data/$instanceId/session'
@@ -247,12 +257,13 @@ export interface FileRouteTypes {
     | '/datenschutz'
     | '/impressum'
     | '/mitmachen'
+    | '/api/$'
+    | '/api/docs'
     | '/api/healthcheck'
     | '/api/seed'
     | '/dashboard/import'
     | '/dashboard/users'
     | '/dashboard'
-    | '/api/orpc/$'
     | '/view-data'
     | '/dashboard/instances'
     | '/view-data/$instanceId/session'
@@ -270,13 +281,14 @@ export interface FileRouteTypes {
     | '/_public/datenschutz'
     | '/_public/impressum'
     | '/_public/mitmachen'
+    | '/api/$'
+    | '/api/docs'
     | '/api/healthcheck'
     | '/api/seed'
     | '/dashboard/import'
     | '/dashboard/users'
     | '/dashboard/'
     | '/dashboard/instances/$instanceId'
-    | '/api/orpc/$'
     | '/_public/view-data/'
     | '/dashboard/instances/'
     | '/_public/view-data/$instanceId/session'
@@ -291,9 +303,10 @@ export interface RootRouteChildren {
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ApiSplatRoute: typeof ApiSplatRoute
+  ApiDocsRoute: typeof ApiDocsRoute
   ApiHealthcheckRoute: typeof ApiHealthcheckRoute
   ApiSeedRoute: typeof ApiSeedRoute
-  ApiOrpcSplatRoute: typeof ApiOrpcSplatRoute
   ApiInstanceInstanceIdSessionsRoute: typeof ApiInstanceInstanceIdSessionsRoute
 }
 
@@ -362,6 +375,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHealthcheckRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/docs': {
+      id: '/api/docs'
+      path: '/api/docs'
+      fullPath: '/api/docs'
+      preLoaderRoute: typeof ApiDocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/$': {
+      id: '/api/$'
+      path: '/api/$'
+      fullPath: '/api/$'
+      preLoaderRoute: typeof ApiSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_public/mitmachen': {
       id: '/_public/mitmachen'
       path: '/mitmachen'
@@ -403,13 +430,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/view-data'
       preLoaderRoute: typeof PublicViewDataIndexRouteImport
       parentRoute: typeof PublicRouteRoute
-    }
-    '/api/orpc/$': {
-      id: '/api/orpc/$'
-      path: '/api/orpc/$'
-      fullPath: '/api/orpc/$'
-      preLoaderRoute: typeof ApiOrpcSplatRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/dashboard/instances/$instanceId': {
       id: '/dashboard/instances/$instanceId'
@@ -536,9 +556,10 @@ const rootRouteChildren: RootRouteChildren = {
   PublicRouteRoute: PublicRouteRouteWithChildren,
   DashboardRouteRoute: DashboardRouteRouteWithChildren,
   LoginRoute: LoginRoute,
+  ApiSplatRoute: ApiSplatRoute,
+  ApiDocsRoute: ApiDocsRoute,
   ApiHealthcheckRoute: ApiHealthcheckRoute,
   ApiSeedRoute: ApiSeedRoute,
-  ApiOrpcSplatRoute: ApiOrpcSplatRoute,
   ApiInstanceInstanceIdSessionsRoute: ApiInstanceInstanceIdSessionsRoute,
 }
 export const routeTree = rootRouteImport
