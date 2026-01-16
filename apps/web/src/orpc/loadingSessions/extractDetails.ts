@@ -33,7 +33,7 @@ function coerceToString(
 
 export const extractSessionDetails = authedProcedure
   .input(extractedSessionRangeSchema)
-  .output(extractedSessionSchema.nullable())
+  .output(extractedSessionSchema.omit({ id: true }).nullable())
   .handler(async ({ input }) => {
     const queries: string[] = [];
     for (const [type, fields] of Object.entries(interestingSessionFields)) {

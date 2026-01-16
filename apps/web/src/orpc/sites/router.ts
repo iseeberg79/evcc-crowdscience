@@ -19,6 +19,9 @@ const siteStatisticsRowSchema = influxRowBaseSchema.extend({
   _value: z.number(),
 });
 
+type StatisticsKeys = z.infer<typeof siteStatisticsRowSchema>["period"];
+type StatisticsFields = z.infer<typeof siteStatisticsRowSchema>["_field"];
+
 export const sitesRouter = {
   getMetaDataValues: os
     .input(z.object({ instanceId: z.string() }))
@@ -62,8 +65,11 @@ export const sitesRouter = {
     }),
   getStatistics: os
     .input(z.object({ instanceId: z.string() }))
-    .handler(async ({ input }): Promise<MetaData> => {
-      const metaData: MetaData = { values: {}, count: 0 };
+    .handler(async ({ input }) => {
+      const metaData: MetaData<StatisticsKeys, StatisticsFields, number> = {
+        values: {},
+        count: 0,
+      };
 
       const query = buildFluxQuery(
         `from(bucket: {{bucket}})
@@ -93,7 +99,7 @@ export const sitesRouter = {
 
       for (const row of res.data) {
         metaData.values[row.period] ??= {};
-        metaData.values[row.period][row._field] = {
+        metaData.values[row.period]![row._field] = {
           value: row._value,
           lastUpdate: row._time,
         };

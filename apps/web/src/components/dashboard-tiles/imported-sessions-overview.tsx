@@ -59,7 +59,7 @@ export function ImportedSessions({
                   instanceIds: [instanceId],
                 })
               }
-              icon={<TrashIcon className="h-4 w-4" />}
+              icon={<TrashIcon className="size-4" />}
             />
             <Button asChild>
               <Link to="/dashboard/import" search={{ instanceId }}>

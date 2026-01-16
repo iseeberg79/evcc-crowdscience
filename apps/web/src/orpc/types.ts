@@ -1,13 +1,30 @@
 import * as z from "zod";
 
-export type InfluxValue = {
-  value: string | number | boolean;
+export type InfluxPrimitive = string | number | boolean;
+
+export type InfluxValue<TValue = InfluxPrimitive> = {
+  value: TValue;
   lastUpdate: number;
 };
-export type InfluxFieldValues = Record<string, InfluxValue>;
-export type MetaData = {
+
+type LooseRecord<K extends string, V> = Partial<Record<K, V>> &
+  Record<string, V>;
+
+export type InfluxFieldValues<
+  TProbableFields extends string = string,
+  TValue = InfluxPrimitive,
+> = LooseRecord<TProbableFields, InfluxValue<TValue>>;
+
+export type MetaData<
+  TProbableKeys extends string = string,
+  TProbableFields extends string = string,
+  TValue = InfluxPrimitive,
+> = {
   count: number;
-  values: Record<string, InfluxFieldValues>;
+  values: LooseRecord<
+    TProbableKeys,
+    InfluxFieldValues<TProbableFields, TValue>
+  >;
 };
 
 // Base schema for common InfluxDB row fields

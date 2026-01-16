@@ -68,7 +68,7 @@ function RouteComponent() {
       capacity,
       connectedBatteries: count,
     };
-  }, [batteryData, filteredInstances]);
+  }, [batteryData]);
 
   return (
     <div className="grid gap-2 md:grid-cols-4 md:gap-4 lg:grid-cols-8 xl:grid-cols-12">

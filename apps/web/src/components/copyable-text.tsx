@@ -39,7 +39,7 @@ export function CopyableText({
         <TooltipTrigger asChild>
           <span
             className={cn(
-              "relative inline-flex items-center gap-1 space-x-1 rounded border border-gray-200 bg-background px-2 py-1 font-mono text-sm",
+              "relative inline-flex items-center gap-1 space-x-1 rounded-sm border border-gray-200 bg-background px-2 py-1 font-mono text-sm",
               "cursor-pointer hover:bg-gray-200",
               className,
             )}
@@ -49,12 +49,12 @@ export function CopyableText({
             <Button
               variant="ghost"
               size="icon"
-              className="h-4 w-4 p-0 text-gray-500"
+              className="size-4 p-0 text-gray-500"
             >
               {copied ? (
-                <Check className="h-3 w-3" />
+                <Check className="size-3" />
               ) : (
-                <Copy className="h-3 w-3" />
+                <Copy className="size-3" />
               )}
               <span className="sr-only">Copy</span>
             </Button>

@@ -112,7 +112,7 @@ export function ExpandableDashboardGraph({
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription></DialogDescription>
           </DialogHeader>
-          <div className="h-full max-h-[70vh] w-full max-w-[90vw] overflow-auto">
+          <div className="size-full max-h-[70vh] max-w-[90vw] overflow-auto">
             {expandContent}
           </div>
         </DialogContent>

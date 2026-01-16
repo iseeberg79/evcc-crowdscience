@@ -38,7 +38,7 @@ function HomePageSection({
     <section
       id={id}
       className={cn(
-        "mx-auto w-full px-4 py-8 sm:px-6 md:py-16 lg:px-10",
+        `mx-auto w-full px-4 py-8 sm:px-6 md:py-16 lg:px-10`,
         className,
       )}
     >
@@ -85,7 +85,7 @@ function Home() {
                 <Button asChild size="lg" className="group w-full sm:w-auto">
                   <Link to="/mitmachen">
                     Jetzt mitmachen
-                    <ArrowRightIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    <ArrowRightIcon className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </Link>
                 </Button>
               </div>
@@ -239,7 +239,7 @@ function Home() {
                 <Button asChild size="lg" className="group">
                   <Link to="/mitmachen">
                     Zur Anleitung
-                    <ArrowRightIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    <ArrowRightIcon className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </Link>
                 </Button>
               </div>
@@ -282,7 +282,7 @@ function Home() {
           <HomePageSection className="bg-muted/30">
             <figure>
               <svg
-                className="mx-auto mb-6 h-12 w-12 text-muted-foreground/50"
+                className="mx-auto mb-6 size-12 text-muted-foreground/50"
                 aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="currentColor"
@@ -290,8 +290,8 @@ function Home() {
               >
                 <path d="M6 0H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4v1a3 3 0 0 1-3 3H2a1 1 0 0 0 0 2h1a5.006 5.006 0 0 0 5-5V2a2 2 0 0 0-2-2Zm10 0h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4v1a3 3 0 0 1-3 3h-1a1 1 0 0 0 0 2h1a5.006 5.006 0 0 0 5-5V2a2 2 0 0 0-2-2Z" />
               </svg>
-              <blockquote className="mx-auto max-w-11/12 text-center text-xl leading-8 font-medium text-balance text-muted-foreground md:max-w-2/3 md:text-2xl">
-                "Im Forschungsprojekt{" "}
+              <blockquote className="mx-auto max-w-11/12 text-center text-xl/8 font-medium text-balance text-muted-foreground md:max-w-2/3 md:text-2xl">
+                &quot;Im Forschungsprojekt{" "}
                 <a
                   href="https://solar.htw-berlin.de/forschungsgruppe/wallbox-inspektion/"
                   target="_blank"
@@ -303,7 +303,7 @@ function Home() {
                 wollen wir besser verstehen, wie man gesteuertes Laden effizient
                 gestaltet. Die evcc-Community hat den Mehrwert bereits erkannt
                 und kann uns bereits heute zeigen, welche neuen Nutzungsmuster
-                zu beachten sind."
+                zu beachten sind.&quot;
               </blockquote>
               <figcaption className="mt-8">
                 <div className="flex items-center justify-center space-x-4">
@@ -452,7 +452,7 @@ function Home() {
               <Button asChild size="lg" variant="secondary" className="group">
                 <Link to="/mitmachen">
                   Token holen & starten
-                  <ArrowRightIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  <ArrowRightIcon className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
                 </Link>
               </Button>
             </div>

@@ -154,7 +154,7 @@ function RouteComponent() {
           mainContent={
             <div>
               {formatUnit(
-                statistics.data.values["30d"]?.chargedKWh?.value as number,
+                statistics.data.values["30d"]?.chargedKWh?.value,
                 "kWh",
               )}{" "}
               Usage{" "}

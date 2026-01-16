@@ -27,9 +27,7 @@ export const Route = createFileRoute(
       routeTitle: (() => {
         const start = session.startTime;
         const end = session.endTime;
-        const durationMin = Math.round(
-          (end - start) / 60000,
-        );
+        const durationMin = Math.round((end - start) / 60000);
         const durationStr =
           durationMin >= 60
             ? `${Math.floor(durationMin / 60)}h ${durationMin % 60}m`

@@ -65,6 +65,7 @@ const DateInput: React.FC<DateInputProps> = ({
     if (isEditingRef.current) return;
 
     const d = value ? new Date(value) : new Date();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDate({
       day: d.getDate(),
       month: d.getMonth() + 1,

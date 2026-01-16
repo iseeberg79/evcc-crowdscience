@@ -73,7 +73,7 @@ export function ExtractedSessions({
               onClick={() =>
                 triggerExtraction.mutateAsync({ instanceIds: [instanceId] })
               }
-              icon={<RefreshCcwIcon className="h-4 w-4" />}
+              icon={<RefreshCcwIcon className="size-4" />}
             />
             <LoadingButton
               variant="outline"
@@ -83,7 +83,7 @@ export function ExtractedSessions({
                   instanceIds: [instanceId],
                 })
               }
-              icon={<TrashIcon className="h-4 w-4" />}
+              icon={<TrashIcon className="size-4" />}
             />
             <ExportLoadingSessionsButton data={extractedSessions.data} />
           </div>
@@ -98,13 +98,19 @@ export function ExtractedSessions({
                 accessorKey: "startTime",
                 header: "Start",
                 cell: ({ row }) =>
-                  formatDate(new Date(row.original.startTime), "dd MMM yyyy - HH:mm:ss"),
+                  formatDate(
+                    new Date(row.original.startTime),
+                    "dd MMM yyyy - HH:mm:ss",
+                  ),
               },
               {
                 accessorKey: "endTime",
                 header: "End",
                 cell: ({ row }) =>
-                  formatDate(new Date(row.original.endTime), "dd MMM yyyy - HH:mm:ss"),
+                  formatDate(
+                    new Date(row.original.endTime),
+                    "dd MMM yyyy - HH:mm:ss",
+                  ),
               },
               {
                 accessorFn: (row) => formatDuration(row.duration),
@@ -113,7 +119,10 @@ export function ExtractedSessions({
               {
                 accessorFn: (row) =>
                   formatDuration(
-                    differenceInSeconds(new Date(row.endTime), new Date(row.startTime)),
+                    differenceInSeconds(
+                      new Date(row.endTime),
+                      new Date(row.startTime),
+                    ),
                   ),
                 header: "Total Duration",
               },
@@ -121,7 +130,8 @@ export function ExtractedSessions({
               {
                 accessorKey: "price",
                 header: "Price",
-                cell: ({ row }) => formatCurrency(row.original.price ?? null, "EUR"),
+                cell: ({ row }) =>
+                  formatCurrency(row.original.price ?? null, "EUR"),
               },
               {
                 accessorKey: "solarPercentage",
@@ -139,12 +149,14 @@ export function ExtractedSessions({
               {
                 accessorKey: "startSoc",
                 header: "Start SoC",
-                cell: ({ row }) => formatPercentage(row.original.startSoc ?? null),
+                cell: ({ row }) =>
+                  formatPercentage(row.original.startSoc ?? null),
               },
               {
                 accessorKey: "endSoc",
                 header: "End SoC",
-                cell: ({ row }) => formatPercentage(row.original.endSoc ?? null),
+                cell: ({ row }) =>
+                  formatPercentage(row.original.endSoc ?? null),
               },
               {
                 accessorKey: "startRange",
@@ -159,7 +171,8 @@ export function ExtractedSessions({
               {
                 accessorKey: "limitSoc",
                 header: "Limit SoC",
-                cell: ({ row }) => formatPercentage(row.original.limitSoc ?? null),
+                cell: ({ row }) =>
+                  formatPercentage(row.original.limitSoc ?? null),
               },
               {
                 accessorKey: "chargedEnergy",

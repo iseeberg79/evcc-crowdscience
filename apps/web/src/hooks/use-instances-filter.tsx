@@ -23,7 +23,7 @@ export function filterInstances(
       !instance.lastReceivedDataAt ||
       (filter?.updatedWithinHours &&
         new Date(instance.lastReceivedDataAt) <
-        subHours(new Date(), filter.updatedWithinHours))
+          subHours(new Date(), filter.updatedWithinHours))
     )
       return false;
 

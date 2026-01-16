@@ -4,7 +4,7 @@ import { ChartSplineIcon } from "lucide-react";
 export function PublicSiteFooter() {
   return (
     <footer className="border-t px-4 py-2 sm:px-6 lg:px-10">
-      <div className="max-w-(--max-content-width) mx-auto flex h-full w-full items-center">
+      <div className="mx-auto flex size-full max-w-(--max-content-width) items-center">
         <nav className="flex gap-4 text-sm">
           <span className="text-sm">
             © {new Date().getFullYear()} evcc-crowdscience
@@ -14,7 +14,7 @@ export function PublicSiteFooter() {
           <Link to="/impressum">Impressum</Link>
           <Link to="/datenschutz">Datenschutz</Link>
           <Link
-            className="text-muted-foreground hover:text-foreground flex items-center gap-1"
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
             to="/dashboard"
           >
             <ChartSplineIcon className="size-4" />

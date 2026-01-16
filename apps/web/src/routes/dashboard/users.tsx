@@ -119,12 +119,12 @@ function RouteComponent() {
             id: "actions",
             cell: ({ row }) =>
               session?.user?.isAdmin ||
-                session?.user?.id === row.original.id ? (
+              session?.user?.id === row.original.id ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="ml-auto flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                      className="ml-auto flex size-8 p-0 data-[state=open]:bg-muted"
                     >
                       <MoreHorizontalIcon />
                       <span className="sr-only">Open menu</span>

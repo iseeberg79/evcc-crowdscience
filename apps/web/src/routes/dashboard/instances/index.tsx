@@ -27,7 +27,9 @@ export const Route = createFileRoute("/dashboard/instances/")({
 
 function TimeDistanceCell({ date }: { date: number | null }) {
   const dateObj = date ? new Date(date) : null;
-  const text = dateObj ? formatDistanceToNow(dateObj, { addSuffix: true }) : "--";
+  const text = dateObj
+    ? formatDistanceToNow(dateObj, { addSuffix: true })
+    : "--";
   // tooltip the date
   return (
     <Tooltip>

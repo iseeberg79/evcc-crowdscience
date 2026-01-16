@@ -141,7 +141,7 @@ function RouteComponent() {
                 wissenschaftliche Zwecke verwendet.
               </p>
               <div className="mb-4 flex items-center">
-                <div className="items-top flex space-x-2">
+                <div className="flex space-x-2">
                   <Checkbox
                     id="terms1"
                     checked={isChecked}
@@ -399,7 +399,10 @@ function VisualStepInstruction({
       </H3>
       <p>Danke für deine Mitarbeit!</p>
       {lastInstanceUpdate ? (
-        <p>Letzte empfangene Daten am: {format(new Date(lastInstanceUpdate), "PPpp")}</p>
+        <p>
+          Letzte empfangene Daten am:{" "}
+          {format(new Date(lastInstanceUpdate), "PPpp")}
+        </p>
       ) : null}
     </div>
   );

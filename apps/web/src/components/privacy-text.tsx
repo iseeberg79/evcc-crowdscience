@@ -35,7 +35,7 @@ export function PrivacyText() {
         E-Mail:{" "}
         <a
           href="mailto:lukas.frey@htw-berlin.de"
-          className="hover:text-primary underline"
+          className="underline hover:text-primary"
         >
           solar@htw-berlin.de
         </a>
@@ -43,7 +43,7 @@ export function PrivacyText() {
         Für technische Anfragen:{" "}
         <a
           href="mailto:lukas.frey@htw-berlin.de"
-          className="hover:text-primary underline"
+          className="underline hover:text-primary"
         >
           lukas.frey@htw-berlin.de
         </a>

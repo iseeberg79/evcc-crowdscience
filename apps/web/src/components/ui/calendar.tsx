@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
 import * as React from "react";
 import {
   ChevronDownIcon,
@@ -125,11 +123,11 @@ function Calendar({
         [UI.CaptionLabel]: "text-sm font-medium",
         [UI.PreviousMonthButton]: cn(
           buttonVariants({ variant: "outline" }),
-          "left-1  z-10 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+          "left-1 z-10 size-7 bg-transparent p-0 opacity-50 hover:opacity-100",
         ),
         [UI.NextMonthButton]: cn(
           buttonVariants({ variant: "outline" }),
-          "right-1  z-10 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+          "right-1 z-10 size-7 bg-transparent p-0 opacity-50 hover:opacity-100",
         ),
         [UI.MonthGrid]: "w-full border-collapse space-y-1",
         [UI.Weekdays]: "flex",
@@ -139,7 +137,7 @@ function Calendar({
         [UI.Nav]:
           "absolute left-0 right-0 top-0 h-10 flex items-center justify-between",
         [UI.Day]: cn(
-          "relative h-7 w-7 xl:h-8 xl:w-8 p-0 text-center text-sm",
+          "relative size-7 p-0 text-center text-sm xl:size-8",
           "focus-within:relative focus-within:z-20",
           "[&:has([aria-selected])]:bg-accent",
           "first:[&:has([aria-selected])]:rounded-l-md",
@@ -147,12 +145,12 @@ function Calendar({
         ),
         [UI.DayButton]: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-7 w-7 xl:h-8 xl:w-8 p-0 font-normal aria-selected:opacity-100",
+          "size-7 p-0 font-normal aria-selected:opacity-100 xl:size-8",
         ),
         [UI.Dropdowns]: "flex items-center gap-1",
         [SelectionState.range_end]: "day-range-end",
         [SelectionState.selected]: cn(
-          "bg-primary text-primary-foreground rounded-md",
+          "rounded-md bg-primary text-primary-foreground",
           "hover:bg-primary hover:text-primary-foreground",
           "focus:bg-primary focus:text-primary-foreground",
         ),
@@ -173,19 +171,18 @@ function Calendar({
         Chevron: ({ orientation = "left" }) => {
           switch (orientation) {
             case "left":
-              return <ChevronLeftIcon className="h-4 w-4" />;
+              return <ChevronLeftIcon className="size-4" />;
             case "right":
-              return <ChevronRightIcon className="h-4 w-4" />;
+              return <ChevronRightIcon className="size-4" />;
             case "up":
-              return <ChevronUpIcon className="h-4 w-4" />;
+              return <ChevronUpIcon className="size-4" />;
             case "down":
-              return <ChevronDownIcon className="h-4 w-4" />;
+              return <ChevronDownIcon className="size-4" />;
             default:
-              return <ChevronLeftIcon className="h-4 w-4" />;
+              return <ChevronLeftIcon className="size-4" />;
           }
         },
         Dropdown: ({ value, onChange, ...props }: DropdownProps) => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
           const selected = props.options?.find(
             (option) => option.value === value,
           );
@@ -203,11 +200,11 @@ function Calendar({
                 <SelectValue>{selected?.label}</SelectValue>
               </SelectTrigger>
               <SelectContent position="popper">
-                {/* eslint-disable-next-line @typescript-eslint/no-unsafe-call */}
+                {}
                 {props.options?.map((option, id: number) => {
                   const optionValue = option.value as string | number;
 
-                  const optionLabel = option.label as string;
+                  const optionLabel = option.label;
                   return (
                     <SelectItem
                       key={`${optionValue}-${id}`}

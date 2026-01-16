@@ -14,9 +14,9 @@ export function InstanceOverview({
   const { data: statistics } = useSuspenseQuery(
     orpc.sites.getStatistics.queryOptions({ input: { instanceId } }),
   );
-  const { data: instance } = useSuspenseQuery(
-    orpc.instances.getById.queryOptions({ input: { id: instanceId } }),
-  );
+  // const { data: instance } = useSuspenseQuery(
+  //   orpc.instances.getById.queryOptions({ input: { id: instanceId } }),
+  // );
 
   const { data: loadingSessions } = useSuspenseQuery(
     orpc.loadingSessions.getExtractedSessions.queryOptions({
@@ -24,9 +24,9 @@ export function InstanceOverview({
     }),
   );
 
-  const { data: batteryMetaData } = useSuspenseQuery(
-    orpc.batteries.getMetaData.queryOptions({ input: { instanceId } }),
-  );
+  // const { data: batteryMetaData } = useSuspenseQuery(
+  //   orpc.batteries.getMetaData.queryOptions({ input: { instanceId } }),
+  // );
 
   return (
     <Card className={className}>
@@ -37,23 +37,23 @@ export function InstanceOverview({
             subtitle="(total)"
             value={loadingSessions?.length.toString()}
           />
-          {statistics?.["30d"]?.chargedKWh?.value ? (
+          {statistics.values?.["30d"]?.chargedKWh?.value ? (
             <InstanceOverviewInfo
               title="Charging Usage"
               subtitle="(30d)"
               value={formatUnit(
-                statistics?.["30d"]?.chargedKWh?.value / 30,
+                statistics.values["30d"]?.chargedKWh?.value,
                 "kWh / d",
                 1,
               )}
             />
           ) : null}
-          {statistics?.["30d"]?.solarPercentage?.value ? (
+          {statistics.values["30d"]?.solarPercentage?.value ? (
             <InstanceOverviewInfo
               title="Solar"
               subtitle="(30d)"
               value={formatUnit(
-                statistics?.["30d"]?.solarPercentage?.value,
+                statistics.values["30d"]?.solarPercentage?.value,
                 "%",
                 1,
               )}
@@ -93,7 +93,7 @@ function InstanceOverviewInfo({
         {subtitle && (
           <>
             {" "}
-            <span className="text-muted-foreground text-xs">{subtitle}</span>
+            <span className="text-xs text-muted-foreground">{subtitle}</span>
           </>
         )}
       </span>
