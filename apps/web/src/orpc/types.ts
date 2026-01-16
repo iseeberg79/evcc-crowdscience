@@ -2,7 +2,7 @@ import * as z from "zod";
 
 export type InfluxValue = {
   value: string | number | boolean;
-  lastUpdate: Date;
+  lastUpdate: number;
 };
 export type InfluxFieldValues = Record<string, InfluxValue>;
 export type MetaData = {
@@ -14,5 +14,5 @@ export type MetaData = {
 export const influxRowBaseSchema = z.object({
   _field: z.string(),
   _value: z.union([z.string(), z.number(), z.boolean()]),
-  _time: z.string().transform((v) => new Date(v)),
+  _time: z.string().transform((v) => new Date(v).getTime()),
 });

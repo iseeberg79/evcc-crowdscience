@@ -75,7 +75,7 @@ function RouteComponent() {
 
   const invalidateUsers = () =>
     queryClient.invalidateQueries({
-      queryKey: orpc.users.getMultiple.queryKey(),
+      queryKey: orpc.users.getMultiple.queryKey({ input: {} }),
     });
 
   const deleteUserMutation = useMutation({
@@ -119,7 +119,7 @@ function RouteComponent() {
             id: "actions",
             cell: ({ row }) =>
               session?.user?.isAdmin ||
-              session?.user?.id === row.original.id ? (
+                session?.user?.id === row.original.id ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button

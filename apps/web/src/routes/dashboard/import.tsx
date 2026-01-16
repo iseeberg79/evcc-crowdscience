@@ -1,15 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { differenceInSeconds, formatDate } from "date-fns";
-import type { InferSelectModel } from "drizzle-orm";
 import * as z from "zod";
 
 import { DataTable } from "~/components/data-table";
 import { LoadingButton } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import type { csvImportLoadingSessions } from "~/db/schema";
 import { formatSecondsInHHMM } from "~/lib/utils";
 import { orpc } from "~/orpc/client";
+import type { CsvImportLoadingSession } from "~/orpc/loadingSessions/types";
 
 export const Route = createFileRoute("/dashboard/import")({
   component: RouteComponent,
@@ -79,7 +78,7 @@ function RouteComponent() {
 export function ImportedSessionsTable({
   importedSessions,
 }: {
-  importedSessions: InferSelectModel<typeof csvImportLoadingSessions>[];
+  importedSessions: CsvImportLoadingSession[];
 }) {
   return (
     <DataTable
@@ -110,7 +109,10 @@ export function ImportedSessionsTable({
         },
         {
           accessorFn: (row) => {
-            const difference = differenceInSeconds(row.endTime, row.startTime);
+            const difference = differenceInSeconds(
+              new Date(row.endTime),
+              new Date(row.startTime),
+            );
 
             return formatSecondsInHHMM(difference);
           },
@@ -123,11 +125,12 @@ export function ImportedSessionsTable({
         },
         {
           accessorFn: (row) =>
-            formatDate(row.startTime, "dd MMM yyyy HH:mm:ss"),
+            formatDate(new Date(row.startTime), "dd MMM yyyy HH:mm:ss"),
           header: "Start Time",
         },
         {
-          accessorFn: (row) => formatDate(row.endTime, "dd MMM yyyy HH:mm:ss"),
+          accessorFn: (row) =>
+            formatDate(new Date(row.endTime), "dd MMM yyyy HH:mm:ss"),
           header: "End Time",
         },
       ]}

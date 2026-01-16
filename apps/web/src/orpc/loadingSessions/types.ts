@@ -3,8 +3,8 @@ import z from "zod";
 import type { interestingSessionFields } from "./extractRanges";
 
 export const extractedSessionRangeSchema = z.object({
-  startTime: z.coerce.date(),
-  endTime: z.coerce.date(),
+  startTime: z.number(),
+  endTime: z.number(),
   componentId: z.string(),
   instanceId: z.string(),
 });
@@ -20,10 +20,11 @@ export type ExtractedFields = Partial<{
 }>;
 
 export const extractedSessionSchema = z.object({
+  id: z.string(),
   sessionRangeHash: z.string(),
   instanceId: z.string(),
-  startTime: z.coerce.date(),
-  endTime: z.coerce.date(),
+  startTime: z.coerce.number(),
+  endTime: z.coerce.number(),
   duration: z.number(),
   componentId: z.string(),
   startSoc: z.number().nullish(),
@@ -42,3 +43,21 @@ export const extractedSessionSchema = z.object({
 });
 
 export type ExtractedSession = z.infer<typeof extractedSessionSchema>;
+
+export const csvImportLoadingSessionSchema = z.object({
+  id: z.string(),
+  instanceId: z.string(),
+  startTime: z.coerce.number(),
+  endTime: z.coerce.number(),
+  startKwh: z.number().nullish(),
+  endKwh: z.number().nullish(),
+  kilometers: z.number().nullish(),
+  loadpoint: z.string().nullish(),
+  vehicle: z.string().nullish(),
+  energy: z.number().nullish(),
+  duration: z.number().nullish(),
+});
+
+export type CsvImportLoadingSession = z.infer<
+  typeof csvImportLoadingSessionSchema
+>;

@@ -1,12 +1,10 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { InferSelectModel } from "drizzle-orm";
 import type { EChartsOption } from "echarts";
 import * as echarts from "echarts";
 import ReactECharts from "echarts-for-react";
 
 import { getChartColor, sharedChartOptions } from "~/constants";
-import type { csvImportLoadingSessions } from "~/db/schema";
 import { useTimeSeriesSettings } from "~/hooks/use-timeseries-settings";
 import { possibleChartTopicsConfig } from "~/lib/time-series-config";
 import { cn, formatUnit } from "~/lib/utils";
@@ -14,6 +12,7 @@ import { orpc } from "~/orpc/client";
 import { getSessionUrl } from "~/orpc/loadingSessions/helpers";
 import {
   extractedSessionSchema,
+  type CsvImportLoadingSession,
   type ExtractedSession,
 } from "~/orpc/loadingSessions/types";
 import type { Gap } from "~/orpc/timeSeries/types";
@@ -40,7 +39,7 @@ export function InstanceTimeSeriesEcharts({
     chartTopicField?: string,
   ) => void;
   className?: string;
-  importedSessions?: InferSelectModel<typeof csvImportLoadingSessions>[];
+  importedSessions?: CsvImportLoadingSession[];
   extractedSessions?: ExtractedSession[];
   gaps?: Gap[];
 }) {
@@ -226,7 +225,7 @@ export function InstanceTimeSeriesEcharts({
               [
                 {
                   name: `${session.loadpoint} ${session.vehicle} ${formatUnit(session.energy, "kWh")}`,
-                  xAxis: session.startTime.getTime(),
+                  xAxis: session.startTime,
                   itemStyle: {
                     color: "rgba(34, 197, 94, 0.3)",
                     borderColor: "rgba(34, 197, 94, 0.5)",
@@ -234,7 +233,7 @@ export function InstanceTimeSeriesEcharts({
                   },
                 },
                 {
-                  xAxis: session.endTime?.getTime(),
+                  xAxis: session.endTime,
                 },
               ] as const,
           ),
@@ -249,7 +248,7 @@ export function InstanceTimeSeriesEcharts({
               [
                 {
                   name: `${session.componentId}`,
-                  xAxis: session.startTime.getTime(),
+                  xAxis: session.startTime,
                   itemStyle: {
                     color: "rgba(239, 68, 68, 0.3)",
                     borderColor: "rgba(239, 68, 68, 0.5)",
@@ -258,7 +257,7 @@ export function InstanceTimeSeriesEcharts({
                   session,
                 },
                 {
-                  xAxis: session.endTime?.getTime(),
+                  xAxis: session.endTime,
                 },
               ] as const,
           ),
@@ -270,21 +269,16 @@ export function InstanceTimeSeriesEcharts({
         markArea: {
           emphasis: { disabled: true },
           data: gaps?.map((gap) => {
-            // Convert string dates to Date objects if needed
-            const start =
-              gap.start instanceof Date ? gap.start : new Date(gap.start);
-            const end = gap.end instanceof Date ? gap.end : new Date(gap.end);
-
             return [
               {
-                xAxis: start.getTime(),
+                xAxis: gap.start,
                 itemStyle: {
                   color: "rgba(239, 68, 68, 0.5)",
                   borderColor: "rgba(239, 68, 68, 0.5)",
                   borderWidth: 1,
                 },
               },
-              { xAxis: end.getTime() },
+              { xAxis: gap.end },
             ];
           }),
         },

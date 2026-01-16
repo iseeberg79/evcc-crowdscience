@@ -75,8 +75,8 @@ export const jobsRouter = {
             ...result,
             sessionRangeHash,
             instanceId,
-            startTime: range.startTime,
-            endTime: range.endTime,
+            startTime: new Date(range.startTime),
+            endTime: new Date(range.endTime),
             componentId: range.componentId,
           });
         }

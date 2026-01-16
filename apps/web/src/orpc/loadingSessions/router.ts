@@ -12,7 +12,7 @@ import { authedProcedure } from "../middleware";
 import { extractSessionDetails } from "./extractDetails";
 import { extractSessionRanges } from "./extractRanges";
 import { importSessions } from "./import";
-import { extractedSessionSchema } from "./types";
+import { csvImportLoadingSessionSchema, extractedSessionSchema } from "./types";
 
 export const loadingSessionsRouter = {
   getExtractedSessions: os
@@ -28,6 +28,7 @@ export const loadingSessionsRouter = {
     }),
   getSessionByHash: os
     .input(z.object({ sessionRangeHash: z.string() }))
+    .output(extractedSessionSchema.optional())
     .handler(({ input }) => {
       return sqliteDb.query.extractedLoadingSessions.findFirst({
         where: eq(
@@ -38,6 +39,7 @@ export const loadingSessionsRouter = {
     }),
   getImportedSessions: os
     .input(instanceIdsFilterSchema)
+    .output(z.array(csvImportLoadingSessionSchema))
     .handler(({ input }) => {
       return sqliteDb.query.csvImportLoadingSessions.findMany({
         where: input.instanceIds?.length

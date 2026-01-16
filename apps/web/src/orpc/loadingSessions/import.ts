@@ -5,6 +5,7 @@ import { sqliteDb } from "~/db/client";
 import { csvImportLoadingSessions } from "~/db/schema";
 import { parseLoadingSessionCsv } from "~/lib/import-export/parseLoadingSessionCsv";
 import { authedProcedure } from "../middleware";
+import { csvImportLoadingSessionSchema } from "./types";
 
 export const importSessions = authedProcedure
   .input(
@@ -13,6 +14,7 @@ export const importSessions = authedProcedure
       instanceId: z.string(),
     }),
   )
+  .output(z.array(csvImportLoadingSessionSchema))
   .handler(async ({ input }) => {
     const instanceId = input.instanceId;
 

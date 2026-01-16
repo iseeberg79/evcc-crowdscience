@@ -57,16 +57,12 @@ export function StateTimelineChart({
             tooltip: { show: false },
             emphasis: { disabled: true },
             data: gaps?.map((gap) => {
-              // Convert string dates to Date objects if needed
-              const start = gap.start instanceof Date ? gap.start : new Date(gap.start);
-              const end = gap.end instanceof Date ? gap.end : new Date(gap.end);
-
               return [
                 {
-                  xAxis: start.getTime(),
+                  xAxis: gap.start,
                   itemStyle: { color: "hsl(18 60% 57%)" },
                 },
-                { xAxis: end.getTime() },
+                { xAxis: gap.end },
               ];
             }),
           },

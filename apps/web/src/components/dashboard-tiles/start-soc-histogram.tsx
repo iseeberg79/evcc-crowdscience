@@ -31,7 +31,8 @@ export function StartSocHistogram({
       select: (data) =>
         data
           .filter(
-            (session) => differenceInDays(new Date(), session.startTime) < 30,
+            (session) =>
+              differenceInDays(new Date(), new Date(session.startTime)) < 30,
           )
           .map((session) => session.startSoc)
           .filter((soc) => soc !== null),
@@ -40,7 +41,7 @@ export function StartSocHistogram({
 
   const plotData = useMemo(() => {
     const histogramData = histogram({
-      data: data ?? [],
+      data: data.filter(Boolean) ?? [],
       range: [0, 100],
       binSize: 1,
     });

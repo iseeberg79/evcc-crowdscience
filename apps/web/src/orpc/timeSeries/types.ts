@@ -1,4 +1,4 @@
 export type Gap = {
-  start: Date;
-  end: Date;
+  start: number;
+  end: number;
 };

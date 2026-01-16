@@ -25,16 +25,16 @@ export const Route = createFileRoute(
     return {
       session,
       routeTitle: (() => {
-        const start = new Date(session.startTime);
-        const end = new Date(session.endTime);
+        const start = session.startTime;
+        const end = session.endTime;
         const durationMin = Math.round(
-          (end.getTime() - start.getTime()) / 60000,
+          (end - start) / 60000,
         );
         const durationStr =
           durationMin >= 60
             ? `${Math.floor(durationMin / 60)}h ${durationMin % 60}m`
             : `${durationMin}m`;
-        return `${format(start, "MMM d, HH:mm")} · ${durationStr}`;
+        return `${format(new Date(start), "MMM d, HH:mm")} · ${durationStr}`;
       })(),
     };
   },

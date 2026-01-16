@@ -71,7 +71,7 @@ export const batteriesRouter = {
         .enum(["capacity", "energy", "soc", "power", "controllable"])
         .or(z.string()),
       _value: z.union([z.number(), z.boolean(), z.string()]),
-      _time: z.string().transform((v) => new Date(v)),
+      _time: z.string().transform((v) => new Date(v).getTime()),
     });
 
     const res: Record<

@@ -25,8 +25,9 @@ export const Route = createFileRoute("/dashboard/instances/")({
   wrapInSuspense: true,
 });
 
-function TimeDistanceCell({ date }: { date: Date | null }) {
-  const text = date ? formatDistanceToNow(date, { addSuffix: true }) : "--";
+function TimeDistanceCell({ date }: { date: number | null }) {
+  const dateObj = date ? new Date(date) : null;
+  const text = dateObj ? formatDistanceToNow(dateObj, { addSuffix: true }) : "--";
   // tooltip the date
   return (
     <Tooltip>
@@ -34,7 +35,7 @@ function TimeDistanceCell({ date }: { date: Date | null }) {
         <span className="text-sm">{text}</span>
       </TooltipTrigger>
       <TooltipContent side="top" align="center">
-        {date ? format(date, "yyyy-MM-dd HH:mm:ss") : "no data yet"}
+        {dateObj ? format(dateObj, "yyyy-MM-dd HH:mm:ss") : "no data yet"}
       </TooltipContent>
     </Tooltip>
   );

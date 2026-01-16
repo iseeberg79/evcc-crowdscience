@@ -98,13 +98,13 @@ export function ExtractedSessions({
                 accessorKey: "startTime",
                 header: "Start",
                 cell: ({ row }) =>
-                  formatDate(row.original.startTime, "dd MMM yyyy - HH:mm:ss"),
+                  formatDate(new Date(row.original.startTime), "dd MMM yyyy - HH:mm:ss"),
               },
               {
                 accessorKey: "endTime",
                 header: "End",
                 cell: ({ row }) =>
-                  formatDate(row.original.endTime, "dd MMM yyyy - HH:mm:ss"),
+                  formatDate(new Date(row.original.endTime), "dd MMM yyyy - HH:mm:ss"),
               },
               {
                 accessorFn: (row) => formatDuration(row.duration),
@@ -113,7 +113,7 @@ export function ExtractedSessions({
               {
                 accessorFn: (row) =>
                   formatDuration(
-                    differenceInSeconds(row.endTime, row.startTime),
+                    differenceInSeconds(new Date(row.endTime), new Date(row.startTime)),
                   ),
                 header: "Total Duration",
               },
@@ -121,13 +121,13 @@ export function ExtractedSessions({
               {
                 accessorKey: "price",
                 header: "Price",
-                cell: ({ row }) => formatCurrency(row.original.price, "EUR"),
+                cell: ({ row }) => formatCurrency(row.original.price ?? null, "EUR"),
               },
               {
                 accessorKey: "solarPercentage",
                 header: "Solar",
                 cell: ({ row }) =>
-                  formatPercentage(row.original.solarPercentage),
+                  formatPercentage(row.original.solarPercentage ?? null),
               },
               {
                 accessorKey: "maxChargePower",
@@ -139,12 +139,12 @@ export function ExtractedSessions({
               {
                 accessorKey: "startSoc",
                 header: "Start SoC",
-                cell: ({ row }) => formatPercentage(row.original.startSoc),
+                cell: ({ row }) => formatPercentage(row.original.startSoc ?? null),
               },
               {
                 accessorKey: "endSoc",
                 header: "End SoC",
-                cell: ({ row }) => formatPercentage(row.original.endSoc),
+                cell: ({ row }) => formatPercentage(row.original.endSoc ?? null),
               },
               {
                 accessorKey: "startRange",
@@ -159,7 +159,7 @@ export function ExtractedSessions({
               {
                 accessorKey: "limitSoc",
                 header: "Limit SoC",
-                cell: ({ row }) => formatPercentage(row.original.limitSoc),
+                cell: ({ row }) => formatPercentage(row.original.limitSoc ?? null),
               },
               {
                 accessorKey: "chargedEnergy",

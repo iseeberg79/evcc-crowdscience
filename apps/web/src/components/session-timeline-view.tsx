@@ -42,23 +42,23 @@ export function SessionTimelineView({ session }: SessionTimelineViewProps) {
   // Compute historical averages
   const historicalAverage = historicalSessions
     ? (() => {
-        const sessionsWithPrice = historicalSessions.filter(
-          (s) =>
-            s.price != null && s.chargedEnergy != null && s.chargedEnergy > 0,
-        );
+      const sessionsWithPrice = historicalSessions.filter(
+        (s) =>
+          s.price != null && s.chargedEnergy != null && s.chargedEnergy > 0,
+      );
 
-        const avgPrice =
-          sessionsWithPrice.length > 0
-            ? sessionsWithPrice.reduce((sum, s) => {
-                const energyKwh = (s.chargedEnergy ?? 0) / 1000;
-                return sum + (s.price ?? 0) / energyKwh;
-              }, 0) / sessionsWithPrice.length
-            : undefined;
+      const avgPrice =
+        sessionsWithPrice.length > 0
+          ? sessionsWithPrice.reduce((sum, s) => {
+            const energyKwh = (s.chargedEnergy ?? 0) / 1000;
+            return sum + (s.price ?? 0) / energyKwh;
+          }, 0) / sessionsWithPrice.length
+          : undefined;
 
-        // Note: sessionCo2PerKWh is not in the database schema yet,
-        // so we skip CO2 comparison for now
-        return { avgPrice, avgCo2PerKwh: undefined };
-      })()
+      // Note: sessionCo2PerKWh is not in the database schema yet,
+      // so we skip CO2 comparison for now
+      return { avgPrice, avgCo2PerKwh: undefined };
+    })()
     : undefined;
 
   const { data, isLoading } = useQuery(
@@ -68,8 +68,8 @@ export function SessionTimelineView({ session }: SessionTimelineViewProps) {
         instanceId: session.instanceId,
         componentId: session.componentId,
         timeRange: {
-          start: session.startTime.getTime(),
-          end: session.endTime.getTime(),
+          start: session.startTime,
+          end: session.endTime,
           windowMinutes: 0,
         },
       },
@@ -106,14 +106,14 @@ export function SessionTimelineView({ session }: SessionTimelineViewProps) {
       {
         type: "slider",
         xAxisIndex: 0,
-        startValue: session.startTime.getTime(),
-        endValue: session.endTime.getTime(),
+        startValue: session.startTime,
+        endValue: session.endTime,
       },
     ],
     xAxis: {
       type: "time",
-      min: session.startTime.getTime(),
-      max: session.endTime.getTime(),
+      min: session.startTime,
+      max: session.endTime,
       axisLabel: {
         formatter: {
           year: "{yyyy}",
@@ -180,8 +180,8 @@ export function SessionTimelineView({ session }: SessionTimelineViewProps) {
         <CardHeader>
           <CardTitle>Session Timeline</CardTitle>
           <CardDescription>
-            {format(session.startTime, "PPpp")} -{" "}
-            {format(session.endTime, "PPpp")}
+            {format(new Date(session.startTime), "PPpp")} -{" "}
+            {format(new Date(session.endTime), "PPpp")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

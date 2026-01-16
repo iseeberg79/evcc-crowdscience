@@ -9,5 +9,6 @@
   "editor.quickSuggestions": {
     "strings": "on"
   },
-  "prettier.configPath": "prettier.config.js"
+  "prettier.configPath": "prettier.config.js",
+  "knip.configFilePath": "app/web/knip.json"
 }

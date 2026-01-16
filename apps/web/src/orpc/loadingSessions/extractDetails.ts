@@ -68,7 +68,11 @@ export const extractSessionDetails = authedProcedure
       z.object({
         _field: z.string(),
         _value: z.union([z.number(), z.string(), z.boolean(), z.null()]),
-        _time: z.string().pipe(z.coerce.date()).optional(),
+        _time: z
+          .string()
+          .pipe(z.coerce.date())
+          .transform((v) => v.getTime())
+          .optional(),
         result: z.enum(["min", "first", "last", "max", "median"]),
       }),
       (row) => {

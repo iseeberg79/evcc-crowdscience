@@ -9,7 +9,7 @@ import { pick } from "~/lib/typeHelpers";
 import { authedProcedure } from "../middleware";
 
 export type InfluxDbInstance = {
-  lastUpdate?: Date;
+  lastUpdate?: number;
   pvMaxPowerKw?: number;
   loadpointMaxPowerKw?: number;
 };
@@ -24,7 +24,7 @@ export async function getActiveInfluxDbInstances({
   const rowSchema = z.union([
     z.object({
       result: z.literal("last-update"),
-      _value: z.string().or(z.number()),
+      _value: z.coerce.number(),
       instance: z.string(),
       _measurement: z.literal("updated"),
     }),
@@ -90,7 +90,7 @@ export async function getActiveInfluxDbInstances({
 
       switch (data.result) {
         case "last-update":
-          instance.lastUpdate = new Date(+data._value * 1000);
+          instance.lastUpdate = data._value * 1000;
           break;
         case "pv-capacity":
           instance.pvMaxPowerKw = data._value;
@@ -112,8 +112,8 @@ export async function getActiveInfluxDbInstances({
 export type InstanceOverview = {
   id: string;
   publicName: string | null;
-  lastReceivedDataAt: Date | null;
-  firstReceivedDataAt: Date | null;
+  lastReceivedDataAt: number | null;
+  firstReceivedDataAt: number | null;
   pvMaxPowerKw?: number;
   loadpointMaxPowerKw?: number;
 };
@@ -127,6 +127,19 @@ export const getInstancesOverview = authedProcedure
         showIgnored: z.boolean().optional().default(false),
       })
       .optional(),
+  )
+  .output(
+    z.array(
+      z.object({
+        id: z.string(),
+        publicName: z.string().nullable(),
+        lastReceivedDataAt: z.coerce.number().nullable(),
+        firstReceivedDataAt: z.coerce.number().nullable(),
+        lastExtractedDataAt: z.coerce.number().nullable(),
+        pvMaxPowerKw: z.number().optional(),
+        loadpointMaxPowerKw: z.number().optional(),
+      }),
+    ),
   )
   .handler(async ({ input }) => {
     const persistedInstances = await sqliteDb.query.instances.findMany({

@@ -41,7 +41,7 @@ export const timeSeriesRouter = {
       const rowSchema = z.object({
         _field: z.string(),
         _value: z.union([z.number(), z.string()]).nullable().catch(null),
-        _time: z.coerce.date(),
+        _time: z.coerce.date().transform((v) => v.getTime()),
         table: z.number(),
         // optional metadata fields
         componentId: z.string().optional(),

@@ -17,7 +17,9 @@ async function createInstance(id: string, influxDbInstance: InfluxDbInstance) {
     .values({
       id,
       publicName: generatePublicName(),
-      lastReceivedDataAt: influxDbInstance.lastUpdate,
+      lastReceivedDataAt: influxDbInstance.lastUpdate
+        ? new Date(influxDbInstance.lastUpdate)
+        : null,
     })
     .returning()
     .then((instances) => instances[0]);
@@ -84,7 +86,7 @@ export async function enrichInstancesMetadata() {
     if (influxDbInstance.lastUpdate) {
       await sqliteDb
         .update(instances)
-        .set({ lastReceivedDataAt: influxDbInstance.lastUpdate })
+        .set({ lastReceivedDataAt: new Date(influxDbInstance.lastUpdate) })
         .where(eq(instances.id, id));
     }
 
@@ -92,7 +94,7 @@ export async function enrichInstancesMetadata() {
     if (influxDbInstance.lastUpdate && !sqliteInstance.firstReceivedDataAt) {
       await setFirstReceivedDataAt(id);
       console.log(
-        `[SQLITE] set first received data at for instance "${id}" to "${influxDbInstance.lastUpdate.toISOString()}"`,
+        `[SQLITE] set first received data at for instance "${id}" to "${new Date(influxDbInstance.lastUpdate).toISOString()}"`,
       );
     }
   }

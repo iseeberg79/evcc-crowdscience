@@ -66,8 +66,8 @@ export const extractSessionRanges = authedProcedure
     const results = new Map<
       string,
       {
-        startTime?: Date;
-        endTime?: Date;
+        startTime?: number;
+        endTime?: number;
         duration: number;
       }
     >();
@@ -97,8 +97,8 @@ export const extractSessionRanges = authedProcedure
         if (row._value < 300) {
           results.set(row.componentId, {
             duration: row._value,
-            startTime: subSeconds(row._time, row._value),
-            endTime: row._time,
+            startTime: subSeconds(row._time, row._value).getTime(),
+            endTime: row._time.getTime(),
           });
           return;
         }
@@ -106,7 +106,7 @@ export const extractSessionRanges = authedProcedure
 
       if (row._value > activeSession.duration) {
         activeSession.duration = row._value;
-        activeSession.endTime = row._time;
+        activeSession.endTime = row._time.getTime();
         return;
       }
     });

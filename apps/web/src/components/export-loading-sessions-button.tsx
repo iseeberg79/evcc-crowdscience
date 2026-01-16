@@ -1,20 +1,18 @@
-import type { InferSelectModel } from "drizzle-orm";
-
-import type { extractedLoadingSessions } from "~/db/schema";
+import type { ExtractedSession } from "~/orpc/loadingSessions/types";
 import { exportToCsv } from "../lib/import-export/exportToCsv";
 import { Button } from "./ui/button";
 
 export function ExportLoadingSessionsButton({
   data,
 }: {
-  data: InferSelectModel<typeof extractedLoadingSessions>[];
+  data: ExtractedSession[];
 }) {
   const handleExportToCsv = () => {
     const headers = ["start", "end", "componentId", "duration", "instanceId"];
     const rows: (string | Date)[][] = data.map((row) => {
       return [
-        row.startTime,
-        row.endTime,
+        new Date(row.startTime),
+        new Date(row.endTime),
         row.componentId,
         row.duration.toString(),
         row.instanceId,

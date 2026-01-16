@@ -70,7 +70,7 @@ export const instancesRouter = {
         return null;
       }
 
-      return new Date(res.data._value * 1000);
+      return res.data._value * 1000;
     }),
   getGaps: os
     .input(
@@ -99,14 +99,14 @@ export const instancesRouter = {
         (row) => {
           const start = subSeconds(row._time, row._value);
 
-          if (gaps.length > 0 && gaps[gaps.length - 1].end > start) {
-            gaps[gaps.length - 1].end = row._time;
+          if (gaps.length > 0 && gaps[gaps.length - 1].end > start.getTime()) {
+            gaps[gaps.length - 1].end = row._time.getTime();
             return;
           }
 
           gaps.push({
-            start,
-            end: row._time,
+            start: start.getTime(),
+            end: row._time.getTime(),
           });
         },
       );
