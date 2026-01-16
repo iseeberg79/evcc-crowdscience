@@ -3,16 +3,13 @@
     "src/router.tsx",
     "src/routes/**/*.{ts,tsx}",
     "server.ts",
-    "vite.config.ts",
-    "drizzle.config.ts",
     "src/orpc/**/*.ts",
-    "src/jobs/**/*.ts"
+    "src/jobs/**/*.ts",
+    "vite.config.ts",
+    "drizzle.config.ts"
   ],
   "project": [
     "src/**/*.{ts,tsx}",
-    "server.ts",
-    "vite.config.ts",
-    "drizzle.config.ts",
     "drizzle/**/*.ts",
     "!dist",
     "!.tanstack",
@@ -21,8 +18,5 @@
   "ignore": ["src/components/ui/*.tsx", "src/routeTree.gen.ts", "reset.d.ts"],
   "paths": {
     "~/*": ["./src/*"]
-  },
-  "vite": {
-    "entry": ["src/main.tsx"]
   }
 }

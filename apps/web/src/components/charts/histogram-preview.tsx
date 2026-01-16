@@ -1,8 +1,7 @@
 import { useMemo } from "react";
-import uPlot from "uplot";
+import ReactECharts from "echarts-for-react";
 
 import { cn, histogram } from "~/lib/utils";
-import { ResponsiveUplot } from "../u-plot/responsive-uplot";
 
 export function HistogramPreview({
   data,
@@ -20,56 +19,57 @@ export function HistogramPreview({
     [data, range, binSize],
   );
 
+  const xAxisData = Array.from(
+    { length: histogramData.length },
+    (_, i) => range[0] + i * binSize,
+  );
+
+  const option = useMemo(
+    () => ({
+      animation: false,
+      grid: {
+        left: 0,
+        right: 0,
+        top: 5,
+        bottom: 0,
+        containLabel: false,
+      },
+      xAxis: {
+        type: "category",
+        data: xAxisData,
+        show: false,
+      },
+      yAxis: {
+        type: "value",
+        show: false,
+      },
+      series: [
+        {
+          data: histogramData,
+          type: "bar",
+          itemStyle: {
+            color: "hsl(173 58% 39% / 0.5)",
+            borderColor: "hsl(173 58% 39% / 0.5)",
+            borderWidth: 0,
+          },
+          barGap: 0,
+          barCategoryGap: 0,
+          smooth: false,
+        },
+      ],
+    }),
+    [xAxisData, histogramData],
+  );
+
   return (
-    <ResponsiveUplot
-      heightConfig={{
-        fixed: 20,
-      }}
-      className={cn("h-[20px]", className)}
-      data={[
-        Array.from(
-          { length: histogramData.length },
-          (_, i) => range[0] + i * binSize,
-        ),
-        histogramData,
-      ]}
-      options={{
-        legend: {
-          show: false,
-        },
-        cursor: {
-          show: false,
-        },
-        axes: [
-          {
-            show: false,
-          },
-          {
-            show: false,
-          },
-        ],
-        scales: {
-          x: {
-            range,
-            time: false,
-          },
-        },
-        series: [
-          {},
-          {
-            paths: uPlot.paths.bars!({
-              align: 1,
-              gap: 0,
-              size: [1],
-            }),
-            fill: "hsl(173 58% 39% / 0.5)",
-            stroke: "hsl(173 58% 39% / 0.5)",
-            points: {
-              show: false,
-            },
-          },
-        ],
-      }}
-    />
+    <div className={cn("h-[20px]", className)}>
+      <ReactECharts
+        option={option}
+        style={{ width: "100%", height: "100%" }}
+        opts={{ renderer: "svg" }}
+        notMerge={true}
+        lazyUpdate={false}
+      />
+    </div>
   );
 }
