@@ -1,5 +1,6 @@
 import { SmartCoercionPlugin } from "@orpc/json-schema";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
+import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
 import { onError } from "@orpc/server";
 import { CORSPlugin } from "@orpc/server/plugins";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
@@ -13,6 +14,26 @@ const handler = new OpenAPIHandler(router, {
     new CORSPlugin(),
     new SmartCoercionPlugin({
       schemaConverters: [new ZodToJsonSchemaConverter()],
+    }),
+    new OpenAPIReferencePlugin({
+      docsProvider: "scalar",
+      schemaConverters: [new ZodToJsonSchemaConverter()],
+      specGenerateOptions: {
+        info: {
+          title: "EVCC CrowdScience API",
+          version: "1.0.0",
+          description: "API for solar charging analytics and data collection",
+          contact: {
+            name: "EVCC CrowdScience",
+            url: "https://github.com/htw-solarspeichersysteme/evcc-crowdscience",
+          },
+        },
+        servers: [{ url: "/api" }],
+        security: [{}],
+        components: {
+          securitySchemes: {},
+        },
+      },
     }),
   ],
   interceptors: [onError(console.error)],

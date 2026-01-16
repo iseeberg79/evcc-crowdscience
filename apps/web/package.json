@@ -13,7 +13,6 @@
     "db:studio": "bunx --bun drizzle-kit studio",
     "db:dbml": "bun --bun drizzle/generate-dbml.ts",
     "typecheck": "bun --bun tsc --noEmit",
-    "openapi:generate": "bun --bun src/orpc/generate-openapi.ts",
     "contract:generate": "bun --bun src/orpc/generate-contract.ts"
   },
   "dependencies": {

@@ -18,7 +18,6 @@ import { Route as DashboardUsersRouteImport } from './routes/dashboard/users'
 import { Route as DashboardImportRouteImport } from './routes/dashboard/import'
 import { Route as ApiSeedRouteImport } from './routes/api/seed'
 import { Route as ApiHealthcheckRouteImport } from './routes/api/healthcheck'
-import { Route as ApiDocsRouteImport } from './routes/api/docs'
 import { Route as ApiSplatRouteImport } from './routes/api/$'
 import { Route as PublicMitmachenRouteImport } from './routes/_public/mitmachen'
 import { Route as PublicImpressumRouteImport } from './routes/_public/impressum'
@@ -75,11 +74,6 @@ const ApiSeedRoute = ApiSeedRouteImport.update({
 const ApiHealthcheckRoute = ApiHealthcheckRouteImport.update({
   id: '/api/healthcheck',
   path: '/api/healthcheck',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiDocsRoute = ApiDocsRouteImport.update({
-  id: '/api/docs',
-  path: '/api/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSplatRoute = ApiSplatRouteImport.update({
@@ -163,7 +157,6 @@ export interface FileRoutesByFullPath {
   '/impressum': typeof PublicImpressumRoute
   '/mitmachen': typeof PublicMitmachenRoute
   '/api/$': typeof ApiSplatRoute
-  '/api/docs': typeof ApiDocsRoute
   '/api/healthcheck': typeof ApiHealthcheckRoute
   '/api/seed': typeof ApiSeedRoute
   '/dashboard/import': typeof DashboardImportRoute
@@ -185,7 +178,6 @@ export interface FileRoutesByTo {
   '/impressum': typeof PublicImpressumRoute
   '/mitmachen': typeof PublicMitmachenRoute
   '/api/$': typeof ApiSplatRoute
-  '/api/docs': typeof ApiDocsRoute
   '/api/healthcheck': typeof ApiHealthcheckRoute
   '/api/seed': typeof ApiSeedRoute
   '/dashboard/import': typeof DashboardImportRoute
@@ -210,7 +202,6 @@ export interface FileRoutesById {
   '/_public/impressum': typeof PublicImpressumRoute
   '/_public/mitmachen': typeof PublicMitmachenRoute
   '/api/$': typeof ApiSplatRoute
-  '/api/docs': typeof ApiDocsRoute
   '/api/healthcheck': typeof ApiHealthcheckRoute
   '/api/seed': typeof ApiSeedRoute
   '/dashboard/import': typeof DashboardImportRoute
@@ -236,7 +227,6 @@ export interface FileRouteTypes {
     | '/impressum'
     | '/mitmachen'
     | '/api/$'
-    | '/api/docs'
     | '/api/healthcheck'
     | '/api/seed'
     | '/dashboard/import'
@@ -258,7 +248,6 @@ export interface FileRouteTypes {
     | '/impressum'
     | '/mitmachen'
     | '/api/$'
-    | '/api/docs'
     | '/api/healthcheck'
     | '/api/seed'
     | '/dashboard/import'
@@ -282,7 +271,6 @@ export interface FileRouteTypes {
     | '/_public/impressum'
     | '/_public/mitmachen'
     | '/api/$'
-    | '/api/docs'
     | '/api/healthcheck'
     | '/api/seed'
     | '/dashboard/import'
@@ -304,7 +292,6 @@ export interface RootRouteChildren {
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   ApiSplatRoute: typeof ApiSplatRoute
-  ApiDocsRoute: typeof ApiDocsRoute
   ApiHealthcheckRoute: typeof ApiHealthcheckRoute
   ApiSeedRoute: typeof ApiSeedRoute
   ApiInstanceInstanceIdSessionsRoute: typeof ApiInstanceInstanceIdSessionsRoute
@@ -373,13 +360,6 @@ declare module '@tanstack/react-router' {
       path: '/api/healthcheck'
       fullPath: '/api/healthcheck'
       preLoaderRoute: typeof ApiHealthcheckRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/docs': {
-      id: '/api/docs'
-      path: '/api/docs'
-      fullPath: '/api/docs'
-      preLoaderRoute: typeof ApiDocsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/$': {
@@ -557,7 +537,6 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRouteRoute: DashboardRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   ApiSplatRoute: ApiSplatRoute,
-  ApiDocsRoute: ApiDocsRoute,
   ApiHealthcheckRoute: ApiHealthcheckRoute,
   ApiSeedRoute: ApiSeedRoute,
   ApiInstanceInstanceIdSessionsRoute: ApiInstanceInstanceIdSessionsRoute,
