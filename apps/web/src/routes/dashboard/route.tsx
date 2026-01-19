@@ -4,6 +4,8 @@ import {
   Outlet,
   retainSearchParams,
 } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { getCookies } from "@tanstack/react-start/server";
 import { createQuery } from "react-query-kit";
 import * as z from "zod";
 
@@ -18,14 +20,17 @@ import {
 } from "~/components/ui/sidebar";
 import { Toaster } from "~/components/ui/toaster";
 import { instancesFilterSchema } from "~/lib/globalSchemas";
-import { fetchCookie } from "~/serverHandlers/cookies";
+
+const fetchSidebarCookie = createServerFn().handler(
+  () => getCookies()["sidebar:state"] === "true",
+);
 
 const useSidebarState = createQuery({
   queryKey: ["sidebar", "state"],
   fetcher: async () => {
-    const sideBardCookie = await fetchCookie({ data: "sidebar:state" });
+    const sideBarCookie = await fetchSidebarCookie();
     return {
-      sidebarOpen: sideBardCookie ? sideBardCookie === "true" : true,
+      sidebarOpen: sideBarCookie,
     };
   },
 });
