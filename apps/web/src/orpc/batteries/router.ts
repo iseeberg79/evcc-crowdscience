@@ -1,4 +1,3 @@
-import { os } from "@orpc/server";
 import * as z from "zod";
 
 import { instanceCountsAsActiveDays } from "~/constants";
@@ -7,6 +6,7 @@ import { env } from "~/env";
 import { instanceIdsFilterSchema } from "~/lib/globalSchemas";
 import { buildFluxQuery } from "~/lib/influx-query";
 import { instanceQuerySchema } from "~/schema/instances";
+import { publicProcedure } from "../middleware";
 import { influxRowBaseSchema, type MetaData } from "../types";
 
 const batteryMetadataRowSchema = influxRowBaseSchema.extend({
@@ -18,7 +18,13 @@ const batteryMetadataRowSchema = influxRowBaseSchema.extend({
 });
 
 export const batteriesRouter = {
-  getMetaData: os
+  getMetaData: publicProcedure
+    .errors({
+      INFLUX_QUERY_ERROR: {
+        message: "Failed to query battery metadata",
+        status: 500,
+      },
+    })
     .route({
       tags: ["Batteries"],
       summary: "Get battery metadata",
@@ -89,7 +95,13 @@ export const batteriesRouter = {
 
       return metaData;
     }),
-  getData: os
+  getData: publicProcedure
+    .errors({
+      INFLUX_QUERY_ERROR: {
+        message: "Failed to query battery data",
+        status: 500,
+      },
+    })
     .route({
       tags: ["Batteries"],
       summary: "Get battery data",

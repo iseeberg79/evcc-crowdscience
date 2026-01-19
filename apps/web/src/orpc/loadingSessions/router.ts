@@ -1,4 +1,4 @@
-import { os } from "@orpc/server";
+
 import { desc, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 
@@ -15,7 +15,7 @@ import { importSessions } from "./import";
 import { csvImportLoadingSessionSchema, extractedSessionSchema } from "./types";
 
 export const loadingSessionsRouter = {
-  getExtractedSessions: os
+  getExtractedSessions: publicProcedure
     .route({
       tags: ["Loading Sessions"],
       summary: "Get extracted sessions",
@@ -59,7 +59,7 @@ export const loadingSessionsRouter = {
       }
       return session;
     }),
-  getImportedSessions: os
+  getImportedSessions: publicProcedure
     .route({
       tags: ["Loading Sessions"],
       summary: "Get imported sessions",

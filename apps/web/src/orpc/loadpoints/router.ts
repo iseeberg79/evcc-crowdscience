@@ -1,4 +1,3 @@
-import { os } from "@orpc/server";
 import * as z from "zod";
 
 import { instanceCountsAsActiveDays } from "~/constants";
@@ -6,6 +5,7 @@ import { influxDb } from "~/db/client";
 import { env } from "~/env";
 import { buildFluxQuery } from "~/lib/influx-query";
 import { instanceQuerySchema } from "~/schema/instances";
+import { publicProcedure } from "../middleware";
 import { influxRowBaseSchema, type MetaData } from "../types";
 
 const loadPointMetadataRowSchema = influxRowBaseSchema.extend({
@@ -13,7 +13,13 @@ const loadPointMetadataRowSchema = influxRowBaseSchema.extend({
 });
 
 export const loadpointsRouter = {
-  getMetaData: os
+  getMetaData: publicProcedure
+    .errors({
+      INFLUX_QUERY_ERROR: {
+        message: "Failed to query loadpoint metadata",
+        status: 500,
+      },
+    })
     .route({
       tags: ["Loadpoints"],
       summary: "Get loadpoint metadata",

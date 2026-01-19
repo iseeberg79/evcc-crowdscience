@@ -1,4 +1,3 @@
-import { os } from "@orpc/server";
 import { min } from "date-fns";
 import * as z from "zod";
 
@@ -6,11 +5,18 @@ import { env } from "~/env";
 import { timeRangeInputSchema } from "~/lib/globalSchemas";
 import { buildFluxQuery, queryInflux } from "~/lib/influx-query";
 import { possibleChartTopicsConfig } from "~/lib/time-series-config";
+import { publicProcedure } from "../middleware";
 
 const validChartTopics = Object.keys(possibleChartTopicsConfig);
 
 export const timeSeriesRouter = {
-  getData: os
+  getData: publicProcedure
+    .errors({
+      INFLUX_QUERY_ERROR: {
+        message: "Failed to query time series data",
+        status: 500,
+      },
+    })
     .route({
       tags: ["Time Series"],
       summary: "Get time series data",
@@ -102,13 +108,12 @@ export const timeSeriesRouter = {
           |> filter(fn: (r) => r["_measurement"] == {{chartTopic}})
           ${input.chartTopicField ? `|> filter(fn: (r) => r["_field"] == {{chartTopicField}})` : ""}
           ${input.componentId ? `|> filter(fn: (r) => r["componentId"] == {{componentId}})` : ""}
-          ${
-            input.timeRange.windowMinutes > 0
-              ? `
+          ${input.timeRange.windowMinutes > 0
+          ? `
           |> aggregateWindow(every: {{windowMinutes}}, fn: last, createEmpty: true)
           |> fill(column: "_value", usePrevious: true)`
-              : ""
-          }
+          : ""
+        }
           |> yield(name: "last")
           `,
         {

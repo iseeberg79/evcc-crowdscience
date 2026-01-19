@@ -1,4 +1,3 @@
-import { os } from "@orpc/server";
 import * as z from "zod";
 
 import { instanceCountsAsActiveDays } from "~/constants";
@@ -6,6 +5,7 @@ import { influxDb } from "~/db/client";
 import { env } from "~/env";
 import { buildFluxQuery } from "~/lib/influx-query";
 import { instanceQuerySchema } from "~/schema/instances";
+import { publicProcedure } from "../middleware";
 import {
   influxRowBaseSchema,
   type InfluxFieldValues,
@@ -24,7 +24,13 @@ type StatisticsKeys = z.infer<typeof siteStatisticsRowSchema>["period"];
 type StatisticsFields = z.infer<typeof siteStatisticsRowSchema>["_field"];
 
 export const sitesRouter = {
-  getMetaDataValues: os
+  getMetaDataValues: publicProcedure
+    .errors({
+      INFLUX_QUERY_ERROR: {
+        message: "Failed to query site metadata",
+        status: 500,
+      },
+    })
     .route({
       tags: ["Sites"],
       summary: "Get site metadata values",
@@ -80,7 +86,13 @@ export const sitesRouter = {
 
       return metaData;
     }),
-  getStatistics: os
+  getStatistics: publicProcedure
+    .errors({
+      INFLUX_QUERY_ERROR: {
+        message: "Failed to query site statistics",
+        status: 500,
+      },
+    })
     .route({
       tags: ["Sites"],
       summary: "Get site statistics",
