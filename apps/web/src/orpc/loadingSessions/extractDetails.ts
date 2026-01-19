@@ -32,6 +32,12 @@ function coerceToString(
 }
 
 export const extractSessionDetails = authedProcedure
+  .route({
+    tags: ["Loading Sessions"],
+    summary: "Extract session details",
+    description:
+      "Extracts detailed charging session data including energy, SOC, range, and pricing information from time series data",
+  })
   .input(extractedSessionRangeSchema)
   .output(extractedSessionSchema.omit({ id: true }).nullable())
   .handler(async ({ input }) => {

@@ -33,11 +33,29 @@ export const interestingSessionFields = {
 } as const;
 
 export const extractSessionRanges = authedProcedure
+  .route({
+    tags: ["Loading Sessions"],
+    summary: "Extract session time ranges",
+    description:
+      "Analyzes time series data to identify charging session time ranges from charge duration patterns",
+  })
   .input(
     z.object({
-      instanceId: z.string(),
+      instanceId: z.string().describe("Instance ID to extract sessions from"),
       timeRange: timeRangeInputSchema,
     }),
+  )
+  .output(
+    z
+      .array(
+        z.object({
+          componentId: z.string(),
+          startTime: z.number(),
+          endTime: z.number(),
+          instanceId: z.string(),
+        }),
+      )
+      .describe("Array of extracted session time ranges"),
   )
   .handler(async ({ input }) => {
     const rowSchema = z.object({

@@ -10,7 +10,12 @@ import type { ExtractedSessionRange } from "../loadingSessions/types";
 import { adminProcedure } from "../middleware";
 
 const extractSessionsInputSchema = z.object({
-  instanceIds: z.array(z.string()).optional(),
+  instanceIds: z
+    .array(z.string())
+    .optional()
+    .describe(
+      "Optional array of instance IDs to process. If not provided, processes all instances.",
+    ),
 });
 
 function printSessionRangeOverview(range: ExtractedSessionRange) {
@@ -19,7 +24,14 @@ function printSessionRangeOverview(range: ExtractedSessionRange) {
 
 export const jobsRouter = {
   extractAndSaveSessions: adminProcedure
+    .route({
+      tags: ["Jobs"],
+      summary: "Extract and save sessions",
+      description:
+        "Background job that extracts loading sessions from time series data and saves them to the database. Requires admin privileges.",
+    })
     .input(extractSessionsInputSchema)
+    .output(z.void().describe("No return value - job completes asynchronously"))
     .handler(async ({ input }) => {
       const instanceIds = (
         await sqliteDb.query.instances.findMany({

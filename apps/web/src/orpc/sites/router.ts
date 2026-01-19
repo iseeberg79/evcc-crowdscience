@@ -5,6 +5,7 @@ import { instanceCountsAsActiveDays } from "~/constants";
 import { influxDb } from "~/db/client";
 import { env } from "~/env";
 import { buildFluxQuery } from "~/lib/influx-query";
+import { instanceQuerySchema } from "~/schema/instances";
 import {
   influxRowBaseSchema,
   type InfluxFieldValues,
@@ -24,7 +25,23 @@ type StatisticsFields = z.infer<typeof siteStatisticsRowSchema>["_field"];
 
 export const sitesRouter = {
   getMetaDataValues: os
-    .input(z.object({ instanceId: z.string() }))
+    .route({
+      tags: ["Sites"],
+      summary: "Get site metadata values",
+      description: "Retrieves current field values for a site instance",
+    })
+    .input(instanceQuerySchema)
+    .output(
+      z
+        .record(
+          z.string(),
+          z.object({
+            value: z.union([z.number(), z.string(), z.boolean()]),
+            lastUpdate: z.number(),
+          }),
+        )
+        .describe("Site field values with timestamps"),
+    )
     .handler(async ({ input }): Promise<InfluxFieldValues> => {
       const query = buildFluxQuery(
         `from(bucket: {{bucket}})
@@ -64,7 +81,32 @@ export const sitesRouter = {
       return metaData;
     }),
   getStatistics: os
-    .input(z.object({ instanceId: z.string() }))
+    .route({
+      tags: ["Sites"],
+      summary: "Get site statistics",
+      description:
+        "Retrieves statistical data for a site including CO2, pricing, and solar percentage by time period",
+    })
+    .input(instanceQuerySchema)
+    .output(
+      z
+        .object({
+          values: z.record(
+            z.string(),
+            z.record(
+              z.string(),
+              z.object({
+                value: z.number(),
+                lastUpdate: z.number(),
+              }),
+            ),
+          ),
+          count: z.number(),
+        })
+        .describe(
+          "Site statistics organized by time period (30d, 365d, thisYear, total)",
+        ),
+    )
     .handler(async ({ input }) => {
       const metaData: MetaData<StatisticsKeys, StatisticsFields, number> = {
         values: {},

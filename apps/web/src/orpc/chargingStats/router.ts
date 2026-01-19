@@ -8,7 +8,20 @@ import { authedProcedure } from "../middleware";
 
 export const chargingStatsRouter = {
   getChargingHourHistogram: authedProcedure
+    .route({
+      tags: ["Analytics"],
+      summary: "Get charging hour histogram",
+      description:
+        "Retrieves a histogram of charging activity by hour of day for the past 30 days, showing when charging typically occurs",
+    })
     .input(instanceIdsFilterSchema)
+    .output(
+      z
+        .record(z.string(), z.array(z.number()))
+        .describe(
+          "Histogram data organized by instance ID with array of counts per hour (0-23)",
+        ),
+    )
     .handler(async ({ input }) => {
       const res: Record<string, number[]> = {};
       const rowSchema = z.object({
@@ -27,7 +40,7 @@ export const chargingStatsRouter = {
       instanceIds = ${instanceIdsJson}
 
       from(bucket: {{bucket}})
-        |> range(start: -20d)
+        |> range(start: -30d)
         |> filter(fn: (r) => r["_measurement"] == "loadpoints" and r["_field"] == "chargeCurrents" and not exists r.phase)
         |> window(every: 1h, createEmpty: false)
         |> max()

@@ -11,16 +11,60 @@ const validChartTopics = Object.keys(possibleChartTopicsConfig);
 
 export const timeSeriesRouter = {
   getData: os
+    .route({
+      tags: ["Time Series"],
+      summary: "Get time series data",
+      description:
+        "Retrieves time series data for a specific chart topic and instance, with optional filtering by component and field",
+    })
     .input(
       z.object({
-        chartTopic: z.string().refine((val) => validChartTopics.includes(val), {
-          message: `chartTopic must be one of: ${validChartTopics.join(", ")}`,
-        }),
-        instanceId: z.string().min(1),
+        chartTopic: z
+          .string()
+          .describe(
+            `Chart topic to query (e.g., ${Object.keys(possibleChartTopicsConfig).slice(0, 5).join(", ")}, etc.)`,
+          )
+          .refine((val) => validChartTopics.includes(val), {
+            message: `chartTopic must be one of: ${validChartTopics.join(", ")}`,
+          }),
+        instanceId: z
+          .string()
+          .min(1)
+          .describe("Unique instance identifier (UUIDv7 format)"),
         timeRange: timeRangeInputSchema,
-        chartTopicField: z.string().optional(),
-        componentId: z.string().optional(),
+        chartTopicField: z
+          .string()
+          .optional()
+          .describe("Optional field name to filter within the chart topic"),
+        componentId: z
+          .string()
+          .optional()
+          .describe("Optional component ID to filter data"),
       }),
+    )
+    .output(
+      z
+        .array(
+          z.object({
+            field: z.string(),
+            data: z.array(
+              z.tuple([
+                z.number(),
+                z.union([z.number(), z.string()]).nullable(),
+              ]),
+            ),
+            metadata: z.object({
+              componentId: z.string().optional(),
+              vehicleId: z.string().optional(),
+              phase: z.string().optional(),
+              circuitId: z.string().optional(),
+              gridId: z.string().optional(),
+            }),
+          }),
+        )
+        .describe(
+          "Time series data grouped by field with timestamps and values",
+        ),
     )
     .handler(async ({ input }) => {
       const tables = new Map<

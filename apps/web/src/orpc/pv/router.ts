@@ -5,6 +5,7 @@ import { instanceCountsAsActiveDays } from "~/constants";
 import { influxDb } from "~/db/client";
 import { env } from "~/env";
 import { buildFluxQuery } from "~/lib/influx-query";
+import { instanceQuerySchema } from "~/schema/instances";
 import { influxRowBaseSchema, type MetaData } from "../types";
 
 const pvMetadataRowSchema = influxRowBaseSchema.extend({
@@ -17,7 +18,32 @@ const pvMetadataRowSchema = influxRowBaseSchema.extend({
 
 export const pvRouter = {
   getMetaData: os
-    .input(z.object({ instanceId: z.string() }))
+    .route({
+      tags: ["PV Systems"],
+      summary: "Get PV system metadata",
+      description:
+        "Retrieves metadata for all photovoltaic components of a specific instance, including energy, power, and current information",
+    })
+    .input(instanceQuerySchema)
+    .output(
+      z
+        .object({
+          values: z.record(
+            z.string(),
+            z.record(
+              z.string(),
+              z.object({
+                value: z.union([z.number(), z.string(), z.boolean()]),
+                lastUpdate: z.number(),
+              }),
+            ),
+          ),
+          count: z.number(),
+        })
+        .describe(
+          "PV system metadata including values per component and total count",
+        ),
+    )
     .handler(async ({ input }): Promise<MetaData> => {
       const metaData: MetaData = { values: {}, count: 0 };
       const query = buildFluxQuery(

@@ -8,7 +8,7 @@ import {
   extractedLoadingSessions,
 } from "~/db/schema";
 import { instanceIdsFilterSchema } from "~/lib/globalSchemas";
-import { authedProcedure } from "../middleware";
+import { authedProcedure, publicProcedure } from "../middleware";
 import { extractSessionDetails } from "./extractDetails";
 import { extractSessionRanges } from "./extractRanges";
 import { importSessions } from "./import";
@@ -16,6 +16,12 @@ import { csvImportLoadingSessionSchema, extractedSessionSchema } from "./types";
 
 export const loadingSessionsRouter = {
   getExtractedSessions: os
+    .route({
+      tags: ["Loading Sessions"],
+      summary: "Get extracted sessions",
+      description:
+        "Retrieves automatically extracted loading sessions from InfluxDB time series data",
+    })
     .input(instanceIdsFilterSchema)
     .output(z.array(extractedSessionSchema))
     .handler(({ input }) => {
@@ -26,18 +32,40 @@ export const loadingSessionsRouter = {
         orderBy: [desc(extractedLoadingSessions.startTime)],
       });
     }),
-  getSessionByHash: os
-    .input(z.object({ sessionRangeHash: z.string() }))
-    .output(extractedSessionSchema.optional())
-    .handler(({ input }) => {
-      return sqliteDb.query.extractedLoadingSessions.findFirst({
+  getSessionByHash: publicProcedure
+    .route({
+      tags: ["Loading Sessions"],
+      summary: "Get session by hash",
+      description:
+        "Retrieves a specific loading session from the db by its unique session range hash",
+    })
+    .input(
+      z.object({
+        sessionRangeHash: z
+          .string()
+          .describe("Unique hash identifying a session time range"),
+      }),
+    )
+    .output(extractedSessionSchema)
+    .handler(async ({ input, errors }) => {
+      const session = await sqliteDb.query.extractedLoadingSessions.findFirst({
         where: eq(
           extractedLoadingSessions.sessionRangeHash,
           input.sessionRangeHash,
         ),
       });
+      if (!session) {
+        throw errors.NOT_FOUND({ message: "Session not found" });
+      }
+      return session;
     }),
   getImportedSessions: os
+    .route({
+      tags: ["Loading Sessions"],
+      summary: "Get imported sessions",
+      description:
+        "Retrieves loading sessions that were manually imported from CSV files",
+    })
     .input(instanceIdsFilterSchema)
     .output(z.array(csvImportLoadingSessionSchema))
     .handler(({ input }) => {
@@ -48,7 +76,16 @@ export const loadingSessionsRouter = {
       });
     }),
   deleteImportedSessions: authedProcedure
+    .route({
+      tags: ["Loading Sessions"],
+      summary: "Delete imported sessions",
+      description:
+        "Deletes CSV-imported loading sessions for specified instances",
+    })
     .input(instanceIdsFilterSchema)
+    .output(
+      z.void().describe("No return value - deletion completed successfully"),
+    )
     .handler(async ({ input }) => {
       return sqliteDb
         .delete(csvImportLoadingSessions)
@@ -59,7 +96,16 @@ export const loadingSessionsRouter = {
         );
     }),
   deleteExtractedSessions: authedProcedure
+    .route({
+      tags: ["Loading Sessions"],
+      summary: "Delete extracted sessions",
+      description:
+        "Deletes automatically extracted loading sessions for specified instances",
+    })
     .input(instanceIdsFilterSchema)
+    .output(
+      z.void().describe("No return value - deletion completed successfully"),
+    )
     .handler(async ({ input }) => {
       return sqliteDb
         .delete(extractedLoadingSessions)

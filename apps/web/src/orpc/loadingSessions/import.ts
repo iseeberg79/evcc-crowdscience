@@ -8,10 +8,20 @@ import { authedProcedure } from "../middleware";
 import { csvImportLoadingSessionSchema } from "./types";
 
 export const importSessions = authedProcedure
+  .route({
+    tags: ["Loading Sessions"],
+    summary: "Import sessions from CSV",
+    description:
+      "Imports loading sessions from a CSV file, automatically deduplicates based on line hash",
+  })
   .input(
     z.object({
-      csvFile: z.instanceof(File),
-      instanceId: z.string(),
+      csvFile: z
+        .instanceof(File)
+        .describe("CSV file containing loading session data"),
+      instanceId: z
+        .string()
+        .describe("Instance ID to associate with imported sessions"),
     }),
   )
   .output(z.array(csvImportLoadingSessionSchema))

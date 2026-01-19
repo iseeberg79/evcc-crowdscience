@@ -1,4 +1,4 @@
-import { ORPCError, os } from "@orpc/server";
+import { os } from "@orpc/server";
 import { subSeconds } from "date-fns";
 import { eq } from "drizzle-orm";
 import * as z from "zod";
@@ -9,38 +9,116 @@ import { env } from "~/env";
 import { timeRangeInputSchema } from "~/lib/globalSchemas";
 import { buildFluxQuery, queryInflux } from "~/lib/influx-query";
 import { generatePublicName } from "~/lib/publicNameGenerator";
+import {
+  instanceIdInputSchema,
+  instanceQuerySchema,
+  setIgnoredInputSchema,
+} from "~/schema/instances";
 import { adminProcedure, authedProcedure } from "../middleware";
 import type { Gap } from "../timeSeries/types";
 import { getInstancesOverview } from "./getOverview";
 
 export const instancesRouter = {
-  generateId: os.handler(async () => {
-    // generate a new instance id and public name
-    const instanceIdPair = {
-      id: Bun.randomUUIDv7(),
-      publicName: generatePublicName(),
-    };
+  generateId: os
+    .route({
+      tags: ["Instances"],
+      summary: "Generate new instance ID",
+      description:
+        "Creates a new instance with a unique UUIDv7 identifier and a human-readable public name",
+    })
+    .output(
+      z
+        .object({
+          id: z.string().describe("Unique instance identifier (UUIDv7)"),
+          publicName: z
+            .string()
+            .describe("Human-readable public name for the instance"),
+        })
+        .describe("Newly generated instance ID pair"),
+    )
+    .handler(async () => {
+      // generate a new instance id and public name
+      const instanceIdPair = {
+        id: Bun.randomUUIDv7(),
+        publicName: generatePublicName(),
+      };
 
-    await sqliteDb.insert(instances).values(instanceIdPair);
+      await sqliteDb.insert(instances).values(instanceIdPair);
 
-    return instanceIdPair;
-  }),
+      return instanceIdPair;
+    }),
   getById: authedProcedure
-    .input(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
+    .route({
+      tags: ["Instances"],
+      summary: "Get instance by ID",
+      description:
+        "Retrieves detailed information about a specific instance including all metadata and timestamps",
+    })
+    .input(instanceIdInputSchema)
+    .output(
+      z
+        .object({
+          id: z.string().describe("Unique instance identifier"),
+          publicName: z
+            .string()
+            .nullable()
+            .describe("Human-readable public name"),
+          ignored: z.boolean().describe("Whether this instance is ignored"),
+          firstReceivedDataAt: z.coerce
+            .date()
+            .nullable()
+            .describe("Timestamp of first received data"),
+          lastReceivedDataAt: z.coerce
+            .date()
+            .nullable()
+            .describe("Timestamp of last received data"),
+          lastExtractedDataAt: z.coerce
+            .date()
+            .nullable()
+            .describe("Timestamp of last data extraction"),
+          createdAt: z.coerce
+            .date()
+            .nullable()
+            .describe("Instance creation timestamp"),
+          updatedAt: z.coerce
+            .date()
+            .nullable()
+            .describe("Last update timestamp"),
+          deletedAt: z.coerce
+            .date()
+            .nullable()
+            .describe("Deletion timestamp if soft-deleted"),
+        })
+        .describe("Instance details including metadata and timestamps"),
+    )
+    .handler(async ({ input, errors }) => {
       const instance = await sqliteDb.query.instances.findFirst({
         where: eq(instances.id, input.id),
       });
 
       if (!instance) {
-        throw new ORPCError("NOT_FOUND", { message: "Instance not found" });
+        throw errors.NOT_FOUND({ message: "Instance not found" });
       }
 
       return instance;
     }),
   getOverview: getInstancesOverview,
   getLatestUpdate: os
-    .input(z.object({ instanceId: z.string() }))
+    .route({
+      tags: ["Instances"],
+      summary: "Get latest update timestamp",
+      description:
+        "Retrieves the timestamp of the most recent data update for a specific instance from the past year",
+    })
+    .input(instanceQuerySchema)
+    .output(
+      z
+        .number()
+        .nullable()
+        .describe(
+          "Timestamp in milliseconds of the last update for this instance, or null if no data found",
+        ),
+    )
     .handler(async ({ input }) => {
       const query = buildFluxQuery(
         `from(bucket: {{bucket}})
@@ -73,8 +151,31 @@ export const instancesRouter = {
       return res.data._value * 1000;
     }),
   getGaps: os
+    .route({
+      tags: ["Instances"],
+      summary: "Get data gaps",
+      description:
+        "Identifies time periods where data updates were missing for more than 40 seconds within a specified time range",
+    })
     .input(
-      z.object({ instanceId: z.string(), timeRange: timeRangeInputSchema }),
+      z.object({
+        instanceId: z
+          .string()
+          .describe("Unique instance identifier (UUIDv7 format)"),
+        timeRange: timeRangeInputSchema,
+      }),
+    )
+    .output(
+      z
+        .array(
+          z.object({
+            start: z.number().describe("Gap start timestamp in milliseconds"),
+            end: z.number().describe("Gap end timestamp in milliseconds"),
+          }),
+        )
+        .describe(
+          "Array of time gaps where data updates were missing for more than 40 seconds",
+        ),
     )
     .handler(async ({ input }) => {
       const query = buildFluxQuery(
@@ -114,7 +215,16 @@ export const instancesRouter = {
       return gaps;
     }),
   setIgnored: adminProcedure
-    .input(z.object({ instanceId: z.string(), ignored: z.boolean() }))
+    .route({
+      tags: ["Instances"],
+      summary: "Set instance ignored status",
+      description:
+        "Updates whether an instance should be ignored. Requires admin privileges.",
+    })
+    .input(setIgnoredInputSchema)
+    .output(
+      z.void().describe("No return value - operation completed successfully"),
+    )
     .handler(async ({ input }) => {
       await sqliteDb
         .update(instances)

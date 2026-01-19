@@ -4,47 +4,16 @@ import * as z from "zod";
 import { sqliteDb } from "~/db/client";
 import { users } from "~/db/schema";
 import { hashPassword } from "~/lib/auth/session";
+import {
+  createUserInputSchema,
+  deleteUserInputSchema,
+  getMultipleUsersInputSchema,
+  getUserInputSchema,
+  undoDeleteUserInputSchema,
+  updateUserInputSchema,
+  userOutputSchema,
+} from "~/schema/users";
 import { adminProcedure, authedProcedure } from "../middleware";
-
-const userColumns = {
-  id: true,
-  email: true,
-  firstName: true,
-  lastName: true,
-  isAdmin: true,
-} as const;
-
-const getUserInputSchema = z
-  .object({
-    email: z.email(),
-    mode: z.literal("email").prefault("email"),
-  })
-  .or(z.object({ id: z.string(), mode: z.literal("id").prefault("id") }));
-
-const getMultipleUsersInputSchema = z
-  .object({ ids: z.array(z.string()).optional() })
-  .optional();
-
-const updateUserInputSchema = z.object({
-  id: z.string().optional(),
-  email: z.email(),
-  firstName: z.string(),
-  lastName: z.string(),
-  isAdmin: z.boolean(),
-  password: z.string().nullable(),
-  deletedAt: z.date().nullable().optional(),
-});
-
-const createUserInputSchema = z.object({
-  email: z.email(),
-  firstName: z.string(),
-  lastName: z.string(),
-  isAdmin: z.boolean(),
-  password: z.string(),
-});
-
-const deleteUserInputSchema = z.object({ id: z.string() });
-const undoDeleteUserInputSchema = z.object({ id: z.string() });
 
 async function checkUserExists(email: string) {
   const user = await sqliteDb.query.users.findFirst({
@@ -55,23 +24,45 @@ async function checkUserExists(email: string) {
   return { user, isActiveUser };
 }
 
-export const usersRouter = {
-  get: authedProcedure.input(getUserInputSchema).handler(async ({ input }) => {
-    const user = await sqliteDb.query.users.findFirst({
-      where: and(
-        isNull(users.deletedAt),
-        input.mode === "email"
-          ? eq(users.email, input.email)
-          : eq(users.id, input.id),
-      ),
-      columns: userColumns,
-    });
+const userColumns = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  isAdmin: true,
+} as const;
 
-    return user;
-  }),
+export const usersRouter = {
+  get: authedProcedure
+    .route({
+      tags: ["Users"],
+      summary: "Get user",
+      description: "Retrieves a single user by email or ID",
+    })
+    .input(getUserInputSchema)
+    .output(userOutputSchema.optional())
+    .handler(async ({ input }) => {
+      const user = await sqliteDb.query.users.findFirst({
+        where: and(
+          isNull(users.deletedAt),
+          input.mode === "email"
+            ? eq(users.email, input.email)
+            : eq(users.id, input.id),
+        ),
+        columns: userColumns,
+      });
+
+      return user;
+    }),
 
   getMultiple: authedProcedure
+    .route({
+      tags: ["Users"],
+      summary: "Get multiple users",
+      description: "Retrieves multiple users, optionally filtered by IDs",
+    })
     .input(getMultipleUsersInputSchema)
+    .output(z.array(userOutputSchema))
     .handler(async ({ input }) => {
       return await sqliteDb.query.users.findMany({
         where: and(
@@ -83,7 +74,15 @@ export const usersRouter = {
     }),
 
   update: adminProcedure
+    .route({
+      tags: ["Users"],
+      summary: "Update user",
+      description: "Updates user information. Requires admin privileges.",
+    })
     .input(updateUserInputSchema)
+    .output(
+      z.void().describe("No return value - update completed successfully"),
+    )
     .handler(async ({ input }) => {
       const { isActiveUser } = await checkUserExists(input.email);
 
@@ -110,7 +109,16 @@ export const usersRouter = {
     }),
 
   create: adminProcedure
+    .route({
+      tags: ["Users"],
+      summary: "Create user",
+      description:
+        "Creates a new user or restores a soft-deleted user. Requires admin privileges.",
+    })
     .input(createUserInputSchema)
+    .output(
+      z.void().describe("No return value - creation completed successfully"),
+    )
     .handler(async ({ input }) => {
       const { user, isActiveUser } = await checkUserExists(input.email);
 
@@ -135,7 +143,15 @@ export const usersRouter = {
     }),
 
   delete: adminProcedure
+    .route({
+      tags: ["Users"],
+      summary: "Delete user",
+      description: "Soft deletes a user. Requires admin privileges.",
+    })
     .input(deleteUserInputSchema)
+    .output(
+      z.void().describe("No return value - deletion completed successfully"),
+    )
     .handler(async ({ input }) => {
       return await sqliteDb
         .update(users)
@@ -144,7 +160,15 @@ export const usersRouter = {
     }),
 
   undoDelete: adminProcedure
+    .route({
+      tags: ["Users"],
+      summary: "Restore user",
+      description: "Restores a soft-deleted user. Requires admin privileges.",
+    })
     .input(undoDeleteUserInputSchema)
+    .output(
+      z.void().describe("No return value - restoration completed successfully"),
+    )
     .handler(async ({ input }) => {
       return await sqliteDb
         .update(users)

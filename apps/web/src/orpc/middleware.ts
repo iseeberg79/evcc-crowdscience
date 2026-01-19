@@ -42,6 +42,9 @@ export const publicProcedure = os.$context<DefaultContext>().errors({
     message: "Unauthorized",
     status: 401,
   },
+  NOT_FOUND: {
+    status: 404,
+  },
 });
 
 export const authedProcedure = publicProcedure.use(

@@ -6,6 +6,7 @@ import { instances } from "~/db/schema";
 import { env } from "~/env";
 import { buildFluxQuery, queryInflux } from "~/lib/influx-query";
 import { pick } from "~/lib/typeHelpers";
+import { instancesOverviewInputSchema } from "~/schema/instances";
 import { authedProcedure } from "../middleware";
 
 export type InfluxDbInstance = {
@@ -120,14 +121,13 @@ export type InstanceOverview = {
 export type InstancesOverview = InstanceOverview[];
 
 export const getInstancesOverview = authedProcedure
-  .input(
-    z
-      .object({
-        idFilter: z.string().optional(),
-        showIgnored: z.boolean().optional().default(false),
-      })
-      .optional(),
-  )
+  .route({
+    tags: ["Instances"],
+    summary: "Get instances overview",
+    description:
+      "Retrieves a comprehensive overview of all instances including data from both SQLite and InfluxDB, with filtering options",
+  })
+  .input(instancesOverviewInputSchema)
   .output(
     z.array(
       z.object({

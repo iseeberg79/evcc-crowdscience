@@ -6,6 +6,7 @@ import { influxDb } from "~/db/client";
 import { env } from "~/env";
 import { instanceIdsFilterSchema } from "~/lib/globalSchemas";
 import { buildFluxQuery } from "~/lib/influx-query";
+import { instanceQuerySchema } from "~/schema/instances";
 import { influxRowBaseSchema, type MetaData } from "../types";
 
 const batteryMetadataRowSchema = influxRowBaseSchema.extend({
@@ -18,7 +19,32 @@ const batteryMetadataRowSchema = influxRowBaseSchema.extend({
 
 export const batteriesRouter = {
   getMetaData: os
-    .input(z.object({ instanceId: z.string() }))
+    .route({
+      tags: ["Batteries"],
+      summary: "Get battery metadata",
+      description:
+        "Retrieves metadata for all batteries of a specific instance, including capacity, energy, state of charge, and power information",
+    })
+    .input(instanceQuerySchema)
+    .output(
+      z
+        .object({
+          values: z.record(
+            z.string(),
+            z.record(
+              z.string(),
+              z.object({
+                value: z.union([z.number(), z.boolean(), z.string()]),
+                lastUpdate: z.number(),
+              }),
+            ),
+          ),
+          count: z.number(),
+        })
+        .describe(
+          "Battery metadata including values per component and total count",
+        ),
+    )
     .handler(async ({ input }): Promise<MetaData> => {
       const metaData: MetaData = { values: {}, count: 0 };
 
@@ -63,34 +89,61 @@ export const batteriesRouter = {
 
       return metaData;
     }),
-  getData: os.input(instanceIdsFilterSchema).handler(async ({ input }) => {
-    const rowSchema = z.object({
-      componentId: z.string(),
-      instance: z.string(),
-      _field: z
-        .enum(["capacity", "energy", "soc", "power", "controllable"])
-        .or(z.string()),
-      _value: z.union([z.number(), z.boolean(), z.string()]),
-      _time: z.string().transform((v) => new Date(v).getTime()),
-    });
+  getData: os
+    .route({
+      tags: ["Batteries"],
+      summary: "Get battery data",
+      description:
+        "Retrieves current battery data for multiple instances, organized by instance and component",
+    })
+    .input(instanceIdsFilterSchema)
+    .output(
+      z
+        .record(
+          z.string(),
+          z.record(
+            z.string(),
+            z.object({
+              capacity: z.number().optional(),
+              energy: z.number().optional(),
+              soc: z.number().optional(),
+              controllable: z.boolean().optional(),
+              power: z.number().optional(),
+            }),
+          ),
+        )
+        .describe(
+          "Battery data organized by instance ID and component ID with current values",
+        ),
+    )
+    .handler(async ({ input }) => {
+      const rowSchema = z.object({
+        componentId: z.string(),
+        instance: z.string(),
+        _field: z
+          .enum(["capacity", "energy", "soc", "power", "controllable"])
+          .or(z.string()),
+        _value: z.union([z.number(), z.boolean(), z.string()]),
+        _time: z.string().transform((v) => new Date(v).getTime()),
+      });
 
-    const res: Record<
-      string,
-      Record<
+      const res: Record<
         string,
-        Partial<{
-          capacity: number;
-          energy: number;
-          soc: number;
-          controllable: boolean;
-          power: number;
-        }>
-      >
-    > = {};
+        Record<
+          string,
+          Partial<{
+            capacity: number;
+            energy: number;
+            soc: number;
+            controllable: boolean;
+            power: number;
+          }>
+        >
+      > = {};
 
-    const instanceIdsJson = JSON.stringify(input.instanceIds ?? []);
-    const query = buildFluxQuery(
-      `
+      const instanceIdsJson = JSON.stringify(input.instanceIds ?? []);
+      const query = buildFluxQuery(
+        `
       import "array"
       instanceIds = ${instanceIdsJson}
 
@@ -100,41 +153,41 @@ export const batteriesRouter = {
         |> last()
         ${input.instanceIds?.length ? `|> filter(fn: (r) => contains(value: r["instance"], set: instanceIds))` : ""}
       `,
-      {
-        bucket: env.INFLUXDB_BUCKET,
-        rangeStart: `-${instanceCountsAsActiveDays}d`,
-      },
-    );
+        {
+          bucket: env.INFLUXDB_BUCKET,
+          rangeStart: `-${instanceCountsAsActiveDays}d`,
+        },
+      );
 
-    try {
-      for await (const { values, tableMeta } of influxDb.iterateRows(query)) {
-        const row = tableMeta.toObject(values);
+      try {
+        for await (const { values, tableMeta } of influxDb.iterateRows(query)) {
+          const row = tableMeta.toObject(values);
 
-        const parsedRow = rowSchema.safeParse(row);
-        if (!parsedRow.success) {
-          console.error(parsedRow.error);
-          continue;
+          const parsedRow = rowSchema.safeParse(row);
+          if (!parsedRow.success) {
+            console.error(parsedRow.error);
+            continue;
+          }
+
+          if (!res[parsedRow.data.instance]) {
+            res[parsedRow.data.instance] = {};
+          }
+
+          if (!res[parsedRow.data.instance][parsedRow.data.componentId]) {
+            res[parsedRow.data.instance][parsedRow.data.componentId] = {};
+          }
+
+          // @ts-expect-error problem with assignment to partial and field types
+          // but zod makes sure that the field is valid
+          res[parsedRow.data.instance][parsedRow.data.componentId][
+            parsedRow.data._field
+          ] = parsedRow.data._value;
         }
-
-        if (!res[parsedRow.data.instance]) {
-          res[parsedRow.data.instance] = {};
-        }
-
-        if (!res[parsedRow.data.instance][parsedRow.data.componentId]) {
-          res[parsedRow.data.instance][parsedRow.data.componentId] = {};
-        }
-
-        // @ts-expect-error problem with assignment to partial and field types
-        // but zod makes sure that the field is valid
-        res[parsedRow.data.instance][parsedRow.data.componentId][
-          parsedRow.data._field
-        ] = parsedRow.data._value;
+      } catch (error) {
+        console.error("InfluxDB query error:", error);
+        return res;
       }
-    } catch (error) {
-      console.error("InfluxDB query error:", error);
-      return res;
-    }
 
-    return res;
-  }),
+      return res;
+    }),
 };

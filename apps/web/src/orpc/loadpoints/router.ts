@@ -5,6 +5,7 @@ import { instanceCountsAsActiveDays } from "~/constants";
 import { influxDb } from "~/db/client";
 import { env } from "~/env";
 import { buildFluxQuery } from "~/lib/influx-query";
+import { instanceQuerySchema } from "~/schema/instances";
 import { influxRowBaseSchema, type MetaData } from "../types";
 
 const loadPointMetadataRowSchema = influxRowBaseSchema.extend({
@@ -13,7 +14,32 @@ const loadPointMetadataRowSchema = influxRowBaseSchema.extend({
 
 export const loadpointsRouter = {
   getMetaData: os
-    .input(z.object({ instanceId: z.string() }))
+    .route({
+      tags: ["Loadpoints"],
+      summary: "Get loadpoint metadata",
+      description:
+        "Retrieves metadata for all charging loadpoints of a specific instance",
+    })
+    .input(instanceQuerySchema)
+    .output(
+      z
+        .object({
+          values: z.record(
+            z.string(),
+            z.record(
+              z.string(),
+              z.object({
+                value: z.union([z.number(), z.string(), z.boolean()]),
+                lastUpdate: z.number(),
+              }),
+            ),
+          ),
+          count: z.number(),
+        })
+        .describe(
+          "Loadpoint metadata including values per component and total count",
+        ),
+    )
     .handler(async ({ input }): Promise<MetaData> => {
       const metaData: MetaData = { values: {}, count: 0 };
 
