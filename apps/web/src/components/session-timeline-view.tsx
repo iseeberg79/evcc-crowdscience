@@ -42,29 +42,29 @@ export function SessionTimelineView({ session }: SessionTimelineViewProps) {
   // Compute historical averages
   const historicalAverage = historicalSessions
     ? (() => {
-        const sessionsWithPrice = historicalSessions.filter(
-          (s) =>
-            s.price != null && s.chargedEnergy != null && s.chargedEnergy > 0,
-        );
+      const sessionsWithPrice = historicalSessions.filter(
+        (s) =>
+          s.price != null && s.chargedEnergy != null && s.chargedEnergy > 0,
+      );
 
-        const avgPrice =
-          sessionsWithPrice.length > 0
-            ? sessionsWithPrice.reduce((sum, s) => {
-                const energyKwh = (s.chargedEnergy ?? 0) / 1000;
-                return sum + (s.price ?? 0) / energyKwh;
-              }, 0) / sessionsWithPrice.length
-            : undefined;
+      const avgPrice =
+        sessionsWithPrice.length > 0
+          ? sessionsWithPrice.reduce((sum, s) => {
+            const energyKwh = (s.chargedEnergy ?? 0) / 1000;
+            return sum + (s.price ?? 0) / energyKwh;
+          }, 0) / sessionsWithPrice.length
+          : undefined;
 
-        // Note: sessionCo2PerKWh is not in the database schema yet,
-        // so we skip CO2 comparison for now
-        return { avgPrice, avgCo2PerKwh: undefined };
-      })()
+      // Note: sessionCo2PerKWh is not in the database schema yet,
+      // so we skip CO2 comparison for now
+      return { avgPrice, avgCo2PerKwh: undefined };
+    })()
     : undefined;
 
   const { data, isLoading } = useQuery(
     orpc.timeSeries.getData.queryOptions({
       input: {
-        chartTopic: "loadpoints",
+        measurement: "loadpoints",
         instanceId: session.instanceId,
         componentId: session.componentId,
         timeRange: {

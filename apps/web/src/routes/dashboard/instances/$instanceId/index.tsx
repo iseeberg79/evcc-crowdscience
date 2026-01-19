@@ -19,7 +19,7 @@ import { Card, CardContent } from "~/components/ui/card";
 import { useTimeSeriesSettings } from "~/hooks/use-timeseries-settings";
 import { singleInstanceRouteSearchSchema } from "~/lib/globalSchemas";
 import { formatCount, formatUnit } from "~/lib/utils";
-import { ensureDefaultChartTopicField } from "~/middleware/searchValidationHelpers";
+import { ensureDefaultMeasurementField } from "~/middleware/searchValidationHelpers";
 import { orpc } from "~/orpc/client";
 
 export const Route = createFileRoute("/dashboard/instances/$instanceId/")({
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/dashboard/instances/$instanceId/")({
         input: { id: context.instance.id },
       }),
     );
-    ensureDefaultChartTopicField(search.chartTopic, search.chartTopicField);
+    ensureDefaultMeasurementField(search.measurement, search.field);
 
     return {
       instance,
@@ -150,12 +150,12 @@ function RouteComponent() {
       <InstanceTimeSeriesEcharts
         className="col-span-2 md:col-span-4 lg:col-span-8 lg:row-span-4"
         instanceId={instanceId}
-        chartTopic={search.chartTopic}
-        chartTopicField={search.chartTopicField}
-        handleChartTopicChange={(chartTopic, chartTopicField) =>
+        measurement={search.measurement}
+        field={search.field}
+        handleMeasurementChange={(measurement, field) =>
           navigate({
             replace: true,
-            search: (prev) => ({ ...prev, chartTopic, chartTopicField }),
+            search: (prev) => ({ ...prev, measurement, field }),
           })
         }
         extractedSessions={extractedSessions.data}

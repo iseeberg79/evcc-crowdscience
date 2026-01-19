@@ -79,13 +79,13 @@ export const singleInstanceRouteSearchSchema = z
   .object({
     expandedKey: z.string().optional(),
     timeRange: timeRangeUrlSchema,
-    chartTopic: z.string().default("pv"),
-    chartTopicField: z.string().optional(),
+    measurement: z.string().default("pv"),
+    field: z.string().optional(),
   })
   .meta({
     examples: [
       {
-        chartTopic: "pv",
+        measurement: "pv",
         timeRange: { start: 1700000000000 },
       },
     ],

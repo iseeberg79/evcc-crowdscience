@@ -6,7 +6,7 @@ import ReactECharts from "echarts-for-react";
 
 import { getChartColor, sharedChartOptions } from "~/constants";
 import { useTimeSeriesSettings } from "~/hooks/use-timeseries-settings";
-import { possibleChartTopicsConfig } from "~/lib/time-series-config";
+import { possibleMeasurementsConfig } from "~/lib/time-series-config";
 import { cn, formatUnit } from "~/lib/utils";
 import { orpc } from "~/orpc/client";
 import { getSessionUrl } from "~/orpc/loadingSessions/helpers";
@@ -23,20 +23,20 @@ import { Combobox } from "../ui/combo-box";
 
 export function InstanceTimeSeriesEcharts({
   instanceId,
-  chartTopic,
-  chartTopicField,
-  handleChartTopicChange,
+  measurement,
+  field,
+  handleMeasurementChange,
   className,
   importedSessions,
   extractedSessions,
   gaps,
 }: {
   instanceId: string;
-  chartTopic: string;
-  chartTopicField?: string;
-  handleChartTopicChange: (
-    chartTopic: string,
-    chartTopicField?: string,
+  measurement: string;
+  field?: string;
+  handleMeasurementChange: (
+    measurement: string,
+    field?: string,
   ) => void;
   className?: string;
   importedSessions?: CsvImportLoadingSession[];
@@ -46,7 +46,7 @@ export function InstanceTimeSeriesEcharts({
   const { timeRange } = useTimeSeriesSettings();
   const { data, isFetching, isLoading } = useQuery(
     orpc.timeSeries.getData.queryOptions({
-      input: { chartTopic, instanceId, timeRange, chartTopicField },
+      input: { measurement, instanceId, timeRange, field },
     }),
   );
 
@@ -70,7 +70,7 @@ export function InstanceTimeSeriesEcharts({
     > = {};
 
     for (const [key, value] of Object.entries(
-      possibleChartTopicsConfig?.[chartTopic]?.fields,
+      possibleMeasurementsConfig?.[measurement]?.fields,
     )) {
       options[key] ??= {
         value: key,
@@ -80,10 +80,10 @@ export function InstanceTimeSeriesEcharts({
     }
 
     return Object.values(options);
-  }, [chartTopic]);
+  }, [measurement]);
 
   const fieldOption = fieldOptions.find(
-    (option) => option.value === chartTopicField,
+    (option) => option.value === field,
   );
 
   const option: EChartsOption = {
@@ -310,7 +310,7 @@ export function InstanceTimeSeriesEcharts({
           <div className="flex h-full items-center justify-center text-muted-foreground">
             {isLoading || isFetching
               ? "Loading..."
-              : chartTopicField && fieldOptions.length === 0
+              : field && fieldOptions.length === 0
                 ? "No data available for selected field"
                 : "No data available"}
           </div>
@@ -319,25 +319,25 @@ export function InstanceTimeSeriesEcharts({
       <CardFooter className="flex flex-row flex-wrap gap-2">
         <Combobox
           className="w-full md:w-[230px]"
-          options={Object.entries(possibleChartTopicsConfig).map(
+          options={Object.entries(possibleMeasurementsConfig).map(
             ([key, value]) => ({
               value: key,
               label: value.label,
             }),
           )}
-          value={chartTopic}
+          value={measurement}
           onChange={(value) => {
-            handleChartTopicChange(
+            handleMeasurementChange(
               value,
-              Object.keys(possibleChartTopicsConfig[value].fields)[0],
+              Object.keys(possibleMeasurementsConfig[value].fields)[0],
             );
           }}
         />
         <Combobox
           className="w-full md:w-[230px]"
           options={fieldOptions}
-          value={chartTopicField}
-          onChange={(value) => handleChartTopicChange(chartTopic, value)}
+          value={field}
+          onChange={(value) => handleMeasurementChange(measurement, value)}
         />
       </CardFooter>
     </Card>

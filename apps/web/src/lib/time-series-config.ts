@@ -1,4 +1,4 @@
-export type ChartTopicConfig = Record<
+export type MeasurementConfig = Record<
   string,
   {
     label: string;
@@ -12,24 +12,7 @@ export type ChartTopicConfig = Record<
   }
 >;
 
-export const possibleChartTopicsConfig: ChartTopicConfig = {
-  pv: {
-    label: "PV",
-    fields: {
-      power: {
-        label: "Power",
-        unit: "W",
-      },
-      energy: {
-        label: "Energy",
-        unit: "Wh",
-      },
-      excessDCPower: {
-        label: "Excess DC Power",
-        unit: "W",
-      },
-    },
-  },
+export const possibleMeasurementsConfig: MeasurementConfig = {
   battery: {
     label: "Battery",
     fields: {
@@ -47,8 +30,34 @@ export const possibleChartTopicsConfig: ChartTopicConfig = {
       },
     },
   },
+  circuits: {
+    label: "Circuits",
+    fields: {
+      power: {
+        label: "Power",
+        unit: "W",
+      },
+      current: {
+        label: "Current",
+        unit: "A",
+      },
+    },
+  },
+  grid: {
+    label: "Grid",
+    fields: {
+      power: {
+        label: "Power",
+        unit: "W",
+      },
+      energy: {
+        label: "Energy",
+        unit: "Wh",
+      },
+    },
+  },
   loadpoints: {
-    label: "Load Point",
+    label: "Load Points",
     fields: {
       chargePower: {
         label: "Charge Power",
@@ -61,6 +70,76 @@ export const possibleChartTopicsConfig: ChartTopicConfig = {
       chargeDuration: {
         label: "Charge Duration",
         unit: "seconds",
+      },
+    },
+  },
+  pv: {
+    label: "PV",
+    fields: {
+      power: {
+        label: "Power",
+        unit: "W",
+      },
+      energy: {
+        label: "Energy",
+        unit: "Wh",
+      },
+      excessDCPower: {
+        label: "Excess DC Power",
+        unit: "W",
+      },
+    },
+  },
+  site: {
+    label: "Site",
+    fields: {
+      power: {
+        label: "Power",
+        unit: "W",
+      },
+      energy: {
+        label: "Energy",
+        unit: "Wh",
+      },
+    },
+  },
+  statistics: {
+    label: "Statistics",
+    fields: {
+      value: {
+        label: "Value",
+        unit: "",
+      },
+    },
+  },
+  status: {
+    label: "Status",
+    fields: {
+      state: {
+        label: "State",
+        unit: "",
+      },
+    },
+  },
+  updated: {
+    label: "Updated",
+    fields: {
+      timestamp: {
+        label: "Timestamp",
+        unit: "",
+      },
+    },
+  },
+  vehicles: {
+    label: "Vehicles",
+    fields: {
+      soc: {
+        label: "SOC",
+        unit: "%",
+      },
+      range: {
+        label: "Range",
+        unit: "km",
       },
     },
   },

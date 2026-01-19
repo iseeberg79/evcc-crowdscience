@@ -4,10 +4,10 @@ import * as z from "zod";
 import { env } from "~/env";
 import { timeRangeInputSchema } from "~/lib/globalSchemas";
 import { buildFluxQuery, queryInflux } from "~/lib/influx-query";
-import { possibleChartTopicsConfig } from "~/lib/time-series-config";
+import { possibleMeasurementsConfig } from "~/lib/time-series-config";
 import { publicProcedure } from "../middleware";
 
-const validChartTopics = Object.keys(possibleChartTopicsConfig);
+const validMeasurements = Object.keys(possibleMeasurementsConfig);
 
 export const timeSeriesRouter = {
   getData: publicProcedure
@@ -21,28 +21,28 @@ export const timeSeriesRouter = {
       tags: ["Time Series"],
       summary: "Get time series data",
       description:
-        "Retrieves time series data for a specific chart topic and instance, with optional filtering by component and field",
+        "Retrieves time series data for a specific measurement type and instance, with optional filtering by component and field",
     })
     .input(
       z
         .object({
-          chartTopic: z
+          measurement: z
             .string()
             .describe(
-              `Chart topic to query (e.g., ${Object.keys(possibleChartTopicsConfig).slice(0, 5).join(", ")}, etc.)`,
+              `Measurement type to query (e.g., ${Object.keys(possibleMeasurementsConfig).slice(0, 5).join(", ")}, etc.)`,
             )
-            .refine((val) => validChartTopics.includes(val), {
-              message: `chartTopic must be one of: ${validChartTopics.join(", ")}`,
+            .refine((val) => validMeasurements.includes(val), {
+              message: `measurement must be one of: ${validMeasurements.join(", ")}`,
             }),
           instanceId: z
             .string()
             .min(1)
             .describe("Unique instance identifier (UUIDv7 format)"),
           timeRange: timeRangeInputSchema,
-          chartTopicField: z
+          field: z
             .string()
             .optional()
-            .describe("Optional field name to filter within the chart topic"),
+            .describe("Optional field name to filter within the measurement type"),
           componentId: z
             .string()
             .optional()
@@ -51,7 +51,7 @@ export const timeSeriesRouter = {
         .meta({
           examples: [
             {
-              chartTopic: "pv",
+              measurement: "pv",
               instanceId: "018f3d4a-5b6c-7d8e-af01-23456789abcd",
               timeRange: { start: 1704067200000, end: 1704153600000 },
             },
@@ -136,8 +136,8 @@ export const timeSeriesRouter = {
         `from(bucket: {{bucket}})
           |> range(start: {{start}}, stop: {{stop}})
           |> filter(fn: (r) => r["instance"] == {{instanceId}})
-          |> filter(fn: (r) => r["_measurement"] == {{chartTopic}})
-          ${input.chartTopicField ? `|> filter(fn: (r) => r["_field"] == {{chartTopicField}})` : ""}
+          |> filter(fn: (r) => r["_measurement"] == {{measurement}})
+          ${input.field ? `|> filter(fn: (r) => r["_field"] == {{field}})` : ""}
           ${input.componentId ? `|> filter(fn: (r) => r["componentId"] == {{componentId}})` : ""}
           ${input.timeRange.windowMinutes > 0
           ? `
@@ -152,9 +152,9 @@ export const timeSeriesRouter = {
           start: input.timeRange.start,
           stop: min([input.timeRange.end, new Date()]),
           instanceId: input.instanceId,
-          chartTopic: input.chartTopic,
+          measurement: input.measurement,
           windowMinutes: `${input.timeRange.windowMinutes}m`,
-          chartTopicField: input.chartTopicField ?? "",
+          field: input.field ?? "",
           componentId: input.componentId ?? "",
         },
       );
