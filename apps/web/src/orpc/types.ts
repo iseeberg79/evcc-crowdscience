@@ -28,8 +28,19 @@ export type MetaData<
 };
 
 // Base schema for common InfluxDB row fields
-export const influxRowBaseSchema = z.object({
-  _field: z.string(),
-  _value: z.union([z.string(), z.number(), z.boolean()]),
-  _time: z.string().transform((v) => new Date(v).getTime()),
-});
+export const influxRowBaseSchema = z
+  .object({
+    _field: z.string().describe("Field name in InfluxDB"),
+    _value: z
+      .union([z.string(), z.number(), z.boolean()])
+      .describe("Field value"),
+    _time: z
+      .string()
+      .transform((v) => new Date(v).getTime())
+      .describe("Timestamp in ISO format (transformed to milliseconds)"),
+  })
+  .meta({
+    examples: [
+      { _field: "power", _value: 1500.5, _time: "2024-01-01T12:00:00Z" },
+    ],
+  });

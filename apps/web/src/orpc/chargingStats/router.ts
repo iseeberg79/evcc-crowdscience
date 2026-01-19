@@ -17,10 +17,26 @@ export const chargingStatsRouter = {
     .input(instanceIdsFilterSchema)
     .output(
       z
-        .record(z.string(), z.array(z.number()))
+        .record(
+          z.string().describe("Instance ID"),
+          z
+            .array(z.number())
+            .length(24)
+            .describe("Array of counts per hour (0-23)"),
+        )
         .describe(
           "Histogram data organized by instance ID with array of counts per hour (0-23)",
-        ),
+        )
+        .meta({
+          examples: [
+            {
+              "018f3d4a-5b6c-7d8e-af01-23456789abcd": [
+                0, 0, 0, 0, 0, 0, 2, 5, 10, 8, 4, 2, 1, 0, 0, 0, 3, 7, 12, 15, 8,
+                4, 1, 0,
+              ],
+            },
+          ],
+        }),
     )
     .handler(async ({ input }) => {
       const res: Record<string, number[]> = {};

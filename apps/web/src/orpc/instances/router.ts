@@ -34,7 +34,14 @@ export const instancesRouter = {
             .string()
             .describe("Human-readable public name for the instance"),
         })
-        .describe("Newly generated instance ID pair"),
+        .meta({
+          examples: [
+            {
+              id: "018f3d4a-5b6c-7d8e-af01-23456789abcd",
+              publicName: "shiny-mountain-123",
+            },
+          ],
+        }),
     )
     .handler(async () => {
       // generate a new instance id and public name
@@ -89,7 +96,21 @@ export const instancesRouter = {
             .nullable()
             .describe("Deletion timestamp if soft-deleted"),
         })
-        .describe("Instance details including metadata and timestamps"),
+        .meta({
+          examples: [
+            {
+              id: "018f3d4a-5b6c-7d8e-af01-23456789abcd",
+              publicName: "shiny-mountain-123",
+              ignored: false,
+              firstReceivedDataAt: new Date("2024-01-01T10:00:00Z"),
+              lastReceivedDataAt: new Date("2024-01-02T10:00:00Z"),
+              createdAt: new Date("2024-01-01T09:00:00Z"),
+              updatedAt: new Date("2024-01-02T10:00:00Z"),
+              lastExtractedDataAt: null,
+              deletedAt: null,
+            },
+          ],
+        }),
     )
     .handler(async ({ input, errors }) => {
       const instance = await sqliteDb.query.instances.findFirst({
@@ -117,7 +138,10 @@ export const instancesRouter = {
         .nullable()
         .describe(
           "Timestamp in milliseconds of the last update for this instance, or null if no data found",
-        ),
+        )
+        .meta({
+          examples: [1704110400000, null],
+        }),
     )
     .handler(async ({ input }) => {
       const query = buildFluxQuery(
@@ -158,12 +182,21 @@ export const instancesRouter = {
         "Identifies time periods where data updates were missing for more than 40 seconds within a specified time range",
     })
     .input(
-      z.object({
-        instanceId: z
-          .string()
-          .describe("Unique instance identifier (UUIDv7 format)"),
-        timeRange: timeRangeInputSchema,
-      }),
+      z
+        .object({
+          instanceId: z
+            .string()
+            .describe("Unique instance identifier (UUIDv7 format)"),
+          timeRange: timeRangeInputSchema,
+        })
+        .meta({
+          examples: [
+            {
+              instanceId: "018f3d4a-5b6c-7d8e-af01-23456789abcd",
+              timeRange: { start: 1704067200000, end: 1704153600000 },
+            },
+          ],
+        }),
     )
     .output(
       z
@@ -175,7 +208,10 @@ export const instancesRouter = {
         )
         .describe(
           "Array of time gaps where data updates were missing for more than 40 seconds",
-        ),
+        )
+        .meta({
+          examples: [[{ start: 1704080000000, end: 1704080100000 }]],
+        }),
     )
     .handler(async ({ input }) => {
       const query = buildFluxQuery(

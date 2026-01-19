@@ -39,7 +39,26 @@ export const extractSessionDetails = authedProcedure
       "Extracts detailed charging session data including energy, SOC, range, and pricing information from time series data",
   })
   .input(extractedSessionRangeSchema)
-  .output(extractedSessionSchema.omit({ id: true }).nullable())
+  .output(
+    extractedSessionSchema
+      .omit({ id: true })
+      .nullable()
+      .meta({
+        examples: [
+          {
+            sessionRangeHash: "abc123hash",
+            instanceId: "018f3d4a-5b6c-7d8e-af01-23456789abcd",
+            startTime: 1704110400000,
+            endTime: 1704117600000,
+            duration: 7200,
+            componentId: "lp-1",
+            chargedEnergy: 11.5,
+            mode: "pv",
+          },
+          null,
+        ],
+      }),
+  )
   .handler(async ({ input }) => {
     const queries: string[] = [];
     for (const [type, fields] of Object.entries(interestingSessionFields)) {

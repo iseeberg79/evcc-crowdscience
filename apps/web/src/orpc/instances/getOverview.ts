@@ -129,17 +129,50 @@ export const getInstancesOverview = authedProcedure
   })
   .input(instancesOverviewInputSchema)
   .output(
-    z.array(
-      z.object({
-        id: z.string(),
-        publicName: z.string().nullable(),
-        lastReceivedDataAt: z.coerce.number().nullable(),
-        firstReceivedDataAt: z.coerce.number().nullable(),
-        lastExtractedDataAt: z.coerce.number().nullable(),
-        pvMaxPowerKw: z.number().optional(),
-        loadpointMaxPowerKw: z.number().optional(),
+    z
+      .array(
+        z.object({
+          id: z.string().describe("Unique instance identifier (UUIDv7)"),
+          publicName: z
+            .string()
+            .nullable()
+            .describe("Human-readable public name"),
+          lastReceivedDataAt: z.coerce
+            .number()
+            .nullable()
+            .describe("Timestamp of last received data in milliseconds"),
+          firstReceivedDataAt: z.coerce
+            .number()
+            .nullable()
+            .describe("Timestamp of first received data in milliseconds"),
+          lastExtractedDataAt: z.coerce
+            .number()
+            .nullable()
+            .describe("Timestamp of last data extraction in milliseconds"),
+          pvMaxPowerKw: z
+            .number()
+            .optional()
+            .describe("Maximum PV power in kW found in history"),
+          loadpointMaxPowerKw: z
+            .number()
+            .optional()
+            .describe("Maximum loadpoint power in kW found in history"),
+        }),
+      )
+      .meta({
+        examples: [
+          [
+            {
+              id: "018f3d4a-5b6c-7d8e-af01-23456789abcd",
+              publicName: "shiny-mountain-123",
+              lastReceivedDataAt: 1704110400000,
+              firstReceivedDataAt: 1704024000000,
+              pvMaxPowerKw: 5.5,
+              loadpointMaxPowerKw: 11.0,
+            },
+          ],
+        ],
       }),
-    ),
   )
   .handler(async ({ input }) => {
     const persistedInstances = await sqliteDb.query.instances.findMany({

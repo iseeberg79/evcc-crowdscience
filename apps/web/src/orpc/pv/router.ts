@@ -8,13 +8,24 @@ import { instanceQuerySchema } from "~/schema/instances";
 import { publicProcedure } from "../middleware";
 import { influxRowBaseSchema, type MetaData } from "../types";
 
-const pvMetadataRowSchema = influxRowBaseSchema.extend({
-  _field: z
-    .enum(["energy", "power", "excessDCPower", "currents", "powers"])
-    .or(z.string()),
-  _value: z.union([z.number(), z.string(), z.boolean()]),
-  componentId: z.string().optional(),
-});
+const pvMetadataRowSchema = influxRowBaseSchema
+  .extend({
+    _field: z
+      .enum(["energy", "power", "excessDCPower", "currents", "powers"])
+      .or(z.string()),
+    _value: z.union([z.number(), z.string(), z.boolean()]),
+    componentId: z.string().optional().describe("Unique component ID (pv-*)"),
+  })
+  .meta({
+    examples: [
+      {
+        componentId: "pv-1",
+        _field: "power",
+        _value: 4500.5,
+        _time: "2024-01-01T12:00:00Z",
+      },
+    ],
+  });
 
 export const pvRouter = {
   getMetaData: publicProcedure
@@ -34,21 +45,35 @@ export const pvRouter = {
     .output(
       z
         .object({
-          values: z.record(
-            z.string(),
-            z.record(
+          values: z
+            .record(
               z.string(),
-              z.object({
-                value: z.union([z.number(), z.string(), z.boolean()]),
-                lastUpdate: z.number(),
-              }),
+              z.record(
+                z.string(),
+                z.object({
+                  value: z.union([z.number(), z.string(), z.boolean()]),
+                  lastUpdate: z.number(),
+                }),
+              ),
+            )
+            .describe(
+              "Nested map of componentId -> field -> {value, lastUpdate}",
             ),
-          ),
-          count: z.number(),
+          count: z.number().describe("Total number of PV components"),
         })
-        .describe(
-          "PV system metadata including values per component and total count",
-        ),
+        .meta({
+          examples: [
+            {
+              values: {
+                "pv-1": {
+                  power: { value: 4500, lastUpdate: 1704110400000 },
+                  energy: { value: 120000, lastUpdate: 1704110400000 },
+                },
+              },
+              count: 1,
+            },
+          ],
+        }),
     )
     .handler(async ({ input }): Promise<MetaData> => {
       const metaData: MetaData = { values: {}, count: 0 };

@@ -9,13 +9,24 @@ import { instanceQuerySchema } from "~/schema/instances";
 import { publicProcedure } from "../middleware";
 import { influxRowBaseSchema, type MetaData } from "../types";
 
-const batteryMetadataRowSchema = influxRowBaseSchema.extend({
-  _field: z
-    .enum(["capacity", "energy", "soc", "power", "controllable"])
-    .or(z.string()),
-  _value: z.union([z.number(), z.boolean(), z.string()]),
-  componentId: z.string().optional(),
-});
+const batteryMetadataRowSchema = influxRowBaseSchema
+  .extend({
+    _field: z
+      .enum(["capacity", "energy", "soc", "power", "controllable"])
+      .or(z.string()),
+    _value: z.union([z.number(), z.boolean(), z.string()]),
+    componentId: z.string().optional(),
+  })
+  .meta({
+    examples: [
+      {
+        _field: "capacity",
+        _value: 10000,
+        _time: "2024-01-01T12:00:00Z",
+        componentId: "8934572903847029348",
+      },
+    ],
+  });
 
 export const batteriesRouter = {
   getMetaData: publicProcedure
@@ -35,21 +46,35 @@ export const batteriesRouter = {
     .output(
       z
         .object({
-          values: z.record(
-            z.string(),
-            z.record(
+          values: z
+            .record(
               z.string(),
-              z.object({
-                value: z.union([z.number(), z.boolean(), z.string()]),
-                lastUpdate: z.number(),
-              }),
+              z.record(
+                z.string(),
+                z.object({
+                  value: z.union([z.number(), z.boolean(), z.string()]),
+                  lastUpdate: z.number(),
+                }),
+              ),
+            )
+            .describe(
+              "Nested map of componentId -> field -> {value, lastUpdate}",
             ),
-          ),
-          count: z.number(),
+          count: z.number().describe("Total number of battery components"),
         })
-        .describe(
-          "Battery metadata including values per component and total count",
-        ),
+        .meta({
+          examples: [
+            {
+              values: {
+                "8934572903847029348": {
+                  capacity: { value: 10000, lastUpdate: 1704110400000 },
+                  soc: { value: 85, lastUpdate: 1704110400000 },
+                },
+              },
+              count: 1,
+            },
+          ],
+        }),
     )
     .handler(async ({ input }): Promise<MetaData> => {
       const metaData: MetaData = { values: {}, count: 0 };
@@ -116,17 +141,30 @@ export const batteriesRouter = {
           z.record(
             z.string(),
             z.object({
-              capacity: z.number().optional(),
-              energy: z.number().optional(),
-              soc: z.number().optional(),
-              controllable: z.boolean().optional(),
-              power: z.number().optional(),
+              capacity: z.number().optional().describe("Capacity in Wh"),
+              energy: z.number().optional().describe("Energy in Wh"),
+              soc: z.number().optional().describe("State of charge in %"),
+              controllable: z
+                .boolean()
+                .optional()
+                .describe("Whether the battery is controllable"),
+              power: z.number().optional().describe("Current power in W"),
             }),
           ),
         )
-        .describe(
-          "Battery data organized by instance ID and component ID with current values",
-        ),
+        .meta({
+          examples: [
+            {
+              "018f3d4a-5b6c-7d8e-af01-23456789abcd": {
+                "8934572903847029348": {
+                  capacity: 10000,
+                  soc: 85,
+                  power: 1500,
+                },
+              },
+            },
+          ],
+        }),
     )
     .handler(async ({ input }) => {
       const rowSchema = z.object({

@@ -10,22 +10,36 @@ export const instanceIdSchema = z
   .describe("Unique instance identifier (UUIDv7 format)");
 
 // Input schema for endpoints that need just an instance ID
-export const instanceIdInputSchema = z.object({
-  id: instanceIdSchema,
-});
+export const instanceIdInputSchema = z
+  .object({
+    id: instanceIdSchema,
+  })
+  .meta({
+    examples: [{ id: "018f3d4a-5b6c-7d8e-af01-23456789abcd" }],
+  });
 
 // Input schema for endpoints using 'instanceId' field name
-export const instanceQuerySchema = z.object({
-  instanceId: instanceIdSchema,
-});
+export const instanceQuerySchema = z
+  .object({
+    instanceId: instanceIdSchema,
+  })
+  .meta({
+    examples: [{ instanceId: "018f3d4a-5b6c-7d8e-af01-23456789abcd" }],
+  });
 
 // Input schema for setting ignored status
-export const setIgnoredInputSchema = z.object({
-  instanceId: instanceIdSchema,
-  ignored: z
-    .boolean()
-    .describe("Whether to mark this instance as ignored or not"),
-});
+export const setIgnoredInputSchema = z
+  .object({
+    instanceId: instanceIdSchema,
+    ignored: z
+      .boolean()
+      .describe("Whether to mark this instance as ignored or not"),
+  })
+  .meta({
+    examples: [
+      { instanceId: "018f3d4a-5b6c-7d8e-af01-23456789abcd", ignored: true },
+    ],
+  });
 
 // Input schema for getOverview filters
 export const instancesOverviewInputSchema = z
@@ -40,4 +54,7 @@ export const instancesOverviewInputSchema = z
       .default(false)
       .describe("Whether to include ignored instances in the results"),
   })
-  .optional();
+  .optional()
+  .meta({
+    examples: [{ idFilter: "018f", showIgnored: true }, {}],
+  });

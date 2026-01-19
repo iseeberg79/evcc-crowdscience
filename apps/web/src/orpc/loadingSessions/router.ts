@@ -23,7 +23,23 @@ export const loadingSessionsRouter = {
         "Retrieves automatically extracted loading sessions from InfluxDB time series data",
     })
     .input(instanceIdsFilterSchema)
-    .output(z.array(extractedSessionSchema))
+    .output(
+      z.array(extractedSessionSchema).meta({
+        examples: [
+          [
+            {
+              id: "sess_1",
+              sessionRangeHash: "abc123hash",
+              instanceId: "018f3d4a-5b6c-7d8e-af01-23456789abcd",
+              startTime: 1704110400000,
+              endTime: 1704117600000,
+              duration: 7200,
+              componentId: "lp-1",
+            },
+          ],
+        ],
+      }),
+    )
     .handler(({ input }) => {
       return sqliteDb.query.extractedLoadingSessions.findMany({
         where: input.instanceIds?.length
@@ -40,11 +56,13 @@ export const loadingSessionsRouter = {
         "Retrieves a specific loading session from the db by its unique session range hash",
     })
     .input(
-      z.object({
-        sessionRangeHash: z
-          .string()
-          .describe("Unique hash identifying a session time range"),
-      }),
+      z
+        .object({
+          sessionRangeHash: z
+            .string()
+            .describe("Unique hash identifying a session time range"),
+        })
+        .meta({ examples: [{ sessionRangeHash: "abc123hash" }] }),
     )
     .output(extractedSessionSchema)
     .handler(async ({ input, errors }) => {
@@ -67,7 +85,21 @@ export const loadingSessionsRouter = {
         "Retrieves loading sessions that were manually imported from CSV files",
     })
     .input(instanceIdsFilterSchema)
-    .output(z.array(csvImportLoadingSessionSchema))
+    .output(
+      z.array(csvImportLoadingSessionSchema).meta({
+        examples: [
+          [
+            {
+              id: "imp_1",
+              instanceId: "018f3d4a-5b6c-7d8e-af01-23456789abcd",
+              startTime: 1704110400000,
+              endTime: 1704117600000,
+              energy: 15.0,
+            },
+          ],
+        ],
+      }),
+    )
     .handler(({ input }) => {
       return sqliteDb.query.csvImportLoadingSessions.findMany({
         where: input.instanceIds?.length
@@ -84,7 +116,10 @@ export const loadingSessionsRouter = {
     })
     .input(instanceIdsFilterSchema)
     .output(
-      z.void().describe("No return value - deletion completed successfully"),
+      z
+        .void()
+        .describe("No return value - deletion completed successfully")
+        .meta({ examples: [undefined] }),
     )
     .handler(async ({ input }) => {
       return sqliteDb
@@ -104,7 +139,10 @@ export const loadingSessionsRouter = {
     })
     .input(instanceIdsFilterSchema)
     .output(
-      z.void().describe("No return value - deletion completed successfully"),
+      z
+        .void()
+        .describe("No return value - deletion completed successfully")
+        .meta({ examples: [undefined] }),
     )
     .handler(async ({ input }) => {
       return sqliteDb

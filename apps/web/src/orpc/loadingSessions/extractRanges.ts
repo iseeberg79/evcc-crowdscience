@@ -6,6 +6,7 @@ import { timeRangeInputSchema } from "~/lib/globalSchemas";
 import { buildFluxQuery, queryInflux } from "~/lib/influx-query";
 import { authedProcedure } from "../middleware";
 import type { ExtractedSessionRange } from "./types";
+import { extractedSessionRangeSchema } from "./types";
 
 export const interestingSessionFields = {
   max: [
@@ -40,23 +41,21 @@ export const extractSessionRanges = authedProcedure
       "Analyzes time series data to identify charging session time ranges from charge duration patterns",
   })
   .input(
-    z.object({
-      instanceId: z.string().describe("Instance ID to extract sessions from"),
-      timeRange: timeRangeInputSchema,
-    }),
-  )
-  .output(
     z
-      .array(
-        z.object({
-          componentId: z.string(),
-          startTime: z.number(),
-          endTime: z.number(),
-          instanceId: z.string(),
-        }),
-      )
-      .describe("Array of extracted session time ranges"),
+      .object({
+        instanceId: z.string().describe("Instance ID to extract sessions from"),
+        timeRange: timeRangeInputSchema,
+      })
+      .meta({
+        examples: [
+          {
+            instanceId: "018f3d4a-5b6c-7d8e-af01-23456789abcd",
+            timeRange: { start: 1704067200000, end: 1704153600000 },
+          },
+        ],
+      }),
   )
+  .output(z.array(extractedSessionRangeSchema))
   .handler(async ({ input }) => {
     const rowSchema = z.object({
       _value: z.number(),

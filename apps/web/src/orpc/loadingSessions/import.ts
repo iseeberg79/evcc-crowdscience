@@ -15,16 +15,37 @@ export const importSessions = authedProcedure
       "Imports loading sessions from a CSV file, automatically deduplicates based on line hash",
   })
   .input(
-    z.object({
-      csvFile: z
-        .instanceof(File)
-        .describe("CSV file containing loading session data"),
-      instanceId: z
-        .string()
-        .describe("Instance ID to associate with imported sessions"),
+    z
+      .object({
+        csvFile: z
+          .instanceof(File)
+          .describe("CSV file containing loading session data"),
+        instanceId: z
+          .string()
+          .describe("Instance ID to associate with imported sessions"),
+      })
+      .meta({
+        examples: [
+          // examples for file uploads are tricky in OpenAPI, but we can describe the instanceId
+          { instanceId: "018f3d4a-5b6c-7d8e-af01-23456789abcd" },
+        ],
+      }),
+  )
+  .output(
+    z.array(csvImportLoadingSessionSchema).meta({
+      examples: [
+        [
+          {
+            id: "imp_1",
+            instanceId: "018f3d4a-5b6c-7d8e-af01-23456789abcd",
+            startTime: 1704110400000,
+            endTime: 1704117600000,
+            energy: 15.0,
+          },
+        ],
+      ],
     }),
   )
-  .output(z.array(csvImportLoadingSessionSchema))
   .handler(async ({ input }) => {
     const instanceId = input.instanceId;
 

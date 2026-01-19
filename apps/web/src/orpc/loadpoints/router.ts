@@ -8,9 +8,20 @@ import { instanceQuerySchema } from "~/schema/instances";
 import { publicProcedure } from "../middleware";
 import { influxRowBaseSchema, type MetaData } from "../types";
 
-const loadPointMetadataRowSchema = influxRowBaseSchema.extend({
-  componentId: z.string().optional(),
-});
+const loadPointMetadataRowSchema = influxRowBaseSchema
+  .extend({
+    componentId: z.string().optional().describe("Unique component ID (lp-*)"),
+  })
+  .meta({
+    examples: [
+      {
+        componentId: "lp-1",
+        _field: "title",
+        _value: "Wallbox",
+        _time: "2024-01-01T12:00:00Z",
+      },
+    ],
+  });
 
 export const loadpointsRouter = {
   getMetaData: publicProcedure
@@ -30,21 +41,33 @@ export const loadpointsRouter = {
     .output(
       z
         .object({
-          values: z.record(
-            z.string(),
-            z.record(
+          values: z
+            .record(
               z.string(),
-              z.object({
-                value: z.union([z.number(), z.string(), z.boolean()]),
-                lastUpdate: z.number(),
-              }),
-            ),
-          ),
-          count: z.number(),
+              z.record(
+                z.string(),
+                z.object({
+                  value: z.union([z.number(), z.string(), z.boolean()]),
+                  lastUpdate: z.number(),
+                }),
+              ),
+            )
+            .describe("Nested map of componentId -> field -> {value, lastUpdate}"),
+          count: z.number().describe("Total number of loadpoint components"),
         })
-        .describe(
-          "Loadpoint metadata including values per component and total count",
-        ),
+        .meta({
+          examples: [
+            {
+              values: {
+                "lp-1": {
+                  title: { value: "Main Charger", lastUpdate: 1704110400000 },
+                  chargePower: { value: 11000, lastUpdate: 1704110400000 },
+                },
+              },
+              count: 1,
+            },
+          ],
+        }),
     )
     .handler(async ({ input }): Promise<MetaData> => {
       const metaData: MetaData = { values: {}, count: 0 };

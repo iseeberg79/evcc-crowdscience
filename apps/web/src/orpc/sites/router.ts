@@ -14,11 +14,22 @@ import {
 
 const siteMetadataRowSchema = influxRowBaseSchema;
 
-const siteStatisticsRowSchema = influxRowBaseSchema.extend({
-  _field: z.enum(["avgCo2", "avgPrice", "chargedKWh", "solarPercentage"]),
-  period: z.enum(["30d", "365d", "thisYear", "total"]),
-  _value: z.number(),
-});
+const siteStatisticsRowSchema = influxRowBaseSchema
+  .extend({
+    _field: z.enum(["avgCo2", "avgPrice", "chargedKWh", "solarPercentage"]),
+    period: z.enum(["30d", "365d", "thisYear", "total"]),
+    _value: z.number(),
+  })
+  .meta({
+    examples: [
+      {
+        _field: "chargedKWh",
+        period: "30d",
+        _value: 450.5,
+        _time: "2024-01-01T12:00:00Z",
+      },
+    ],
+  });
 
 type StatisticsKeys = z.infer<typeof siteStatisticsRowSchema>["period"];
 type StatisticsFields = z.infer<typeof siteStatisticsRowSchema>["_field"];
@@ -40,13 +51,21 @@ export const sitesRouter = {
     .output(
       z
         .record(
-          z.string(),
+          z.string().describe("Field name"),
           z.object({
             value: z.union([z.number(), z.string(), z.boolean()]),
             lastUpdate: z.number(),
           }),
         )
-        .describe("Site field values with timestamps"),
+        .describe("Site field values with timestamps")
+        .meta({
+          examples: [
+            {
+              gridPower: { value: 2500, lastUpdate: 1704110400000 },
+              housePower: { value: 800, lastUpdate: 1704110400000 },
+            },
+          ],
+        }),
     )
     .handler(async ({ input }): Promise<InfluxFieldValues> => {
       const query = buildFluxQuery(
@@ -103,21 +122,33 @@ export const sitesRouter = {
     .output(
       z
         .object({
-          values: z.record(
-            z.string(),
-            z.record(
-              z.string(),
-              z.object({
-                value: z.number(),
-                lastUpdate: z.number(),
-              }),
-            ),
-          ),
-          count: z.number(),
+          values: z
+            .record(
+              z.string().describe("Time period (30d, 365d, etc)"),
+              z.record(
+                z.string().describe("Field name (avgPrice, chargedKWh, etc)"),
+                z.object({
+                  value: z.number(),
+                  lastUpdate: z.number(),
+                }),
+              ),
+            )
+            .describe("Statistics organized by period and field"),
+          count: z.number().describe("Total number of statistics records"),
         })
-        .describe(
-          "Site statistics organized by time period (30d, 365d, thisYear, total)",
-        ),
+        .meta({
+          examples: [
+            {
+              values: {
+                "30d": {
+                  chargedKWh: { value: 450.5, lastUpdate: 1704110400000 },
+                  avgPrice: { value: 0.32, lastUpdate: 1704110400000 },
+                },
+              },
+              count: 2,
+            },
+          ],
+        }),
     )
     .handler(async ({ input }) => {
       const metaData: MetaData<StatisticsKeys, StatisticsFields, number> = {

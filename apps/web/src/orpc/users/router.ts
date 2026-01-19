@@ -81,7 +81,10 @@ export const usersRouter = {
     })
     .input(updateUserInputSchema)
     .output(
-      z.void().describe("No return value - update completed successfully"),
+      z
+        .void()
+        .describe("No return value - update completed successfully")
+        .meta({ examples: [undefined] }),
     )
     .handler(async ({ input }) => {
       const { isActiveUser } = await checkUserExists(input.email);
@@ -117,7 +120,10 @@ export const usersRouter = {
     })
     .input(createUserInputSchema)
     .output(
-      z.void().describe("No return value - creation completed successfully"),
+      z
+        .void()
+        .describe("No return value - creation completed successfully")
+        .meta({ examples: [undefined] }),
     )
     .handler(async ({ input }) => {
       const { user, isActiveUser } = await checkUserExists(input.email);
@@ -150,7 +156,10 @@ export const usersRouter = {
     })
     .input(deleteUserInputSchema)
     .output(
-      z.void().describe("No return value - deletion completed successfully"),
+      z
+        .void()
+        .describe("No return value - deletion completed successfully")
+        .meta({ examples: [undefined] }),
     )
     .handler(async ({ input }) => {
       return await sqliteDb
@@ -167,7 +176,10 @@ export const usersRouter = {
     })
     .input(undoDeleteUserInputSchema)
     .output(
-      z.void().describe("No return value - restoration completed successfully"),
+      z
+        .void()
+        .describe("No return value - restoration completed successfully")
+        .meta({ examples: [undefined] }),
     )
     .handler(async ({ input }) => {
       return await sqliteDb

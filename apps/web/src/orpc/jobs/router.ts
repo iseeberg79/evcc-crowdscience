@@ -9,14 +9,18 @@ import { loadingSessionsRouter } from "../loadingSessions/router";
 import type { ExtractedSessionRange } from "../loadingSessions/types";
 import { adminProcedure } from "../middleware";
 
-const extractSessionsInputSchema = z.object({
-  instanceIds: z
-    .array(z.string())
-    .optional()
-    .describe(
-      "Optional array of instance IDs to process. If not provided, processes all instances.",
-    ),
-});
+const extractSessionsInputSchema = z
+  .object({
+    instanceIds: z
+      .array(z.string())
+      .optional()
+      .describe(
+        "Optional array of instance IDs to process. If not provided, processes all instances.",
+      ),
+  })
+  .meta({
+    examples: [{ instanceIds: ["018f3d4a-5b6c-7d8e-af01-23456789abcd"] }, {}],
+  });
 
 function printSessionRangeOverview(range: ExtractedSessionRange) {
   return `${range.instanceId} ${range.componentId} ${format(range.startTime, "yyyy-MM-dd HH:mm:ss")} - ${format(range.endTime, "yyyy-MM-dd HH:mm:ss")}`;

@@ -8,9 +8,21 @@ import { instanceQuerySchema } from "~/schema/instances";
 import { publicProcedure } from "../middleware";
 import { influxRowBaseSchema, type MetaData } from "../types";
 
-const vehicleMetadataRowSchema = influxRowBaseSchema.extend({
-  vehicleId: z.string().optional(),
-});
+const vehicleMetadataRowSchema = influxRowBaseSchema
+  .extend({
+    vehicleId: z.string().optional().describe("Unique vehicle identifier"),
+  })
+  .meta({
+    examples: [
+      {
+        vehicleId: "ev-1",
+        _field: "title",
+        _value: "Model 3",
+        _time: "2024-01-01T12:00:00Z",
+      },
+    ],
+  });
+
 export const vehiclesRouter = {
   getMetaData: publicProcedure
     .errors({
@@ -29,21 +41,33 @@ export const vehiclesRouter = {
     .output(
       z
         .object({
-          values: z.record(
-            z.string(),
-            z.record(
-              z.string(),
-              z.object({
-                value: z.union([z.number(), z.string(), z.boolean()]),
-                lastUpdate: z.number(),
-              }),
-            ),
-          ),
-          count: z.number(),
+          values: z
+            .record(
+              z.string().describe("Vehicle ID"),
+              z.record(
+                z.string().describe("Field name"),
+                z.object({
+                  value: z.union([z.number(), z.string(), z.boolean()]),
+                  lastUpdate: z.number(),
+                }),
+              ),
+            )
+            .describe("Nested map of vehicleId -> field -> {value, lastUpdate}"),
+          count: z.number().describe("Total number of vehicles"),
         })
-        .describe(
-          "Vehicle metadata including values per vehicle ID and total count",
-        ),
+        .meta({
+          examples: [
+            {
+              values: {
+                "ev-1": {
+                  title: { value: "Blue Tesla", lastUpdate: 1704110400000 },
+                  capacity: { value: 75, lastUpdate: 1704110400000 },
+                },
+              },
+              count: 1,
+            },
+          ],
+        }),
     )
     .handler(async ({ input }) => {
       const metaData: MetaData = { values: {}, count: 0 };
