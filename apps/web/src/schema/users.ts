@@ -45,7 +45,11 @@ export const updateUserInputSchema = z
       .string()
       .nullable()
       .describe("New password (null to keep existing)"),
-    deletedAt: z.date().nullable().optional().describe("Soft deletion timestamp"),
+    deletedAt: z
+      .date()
+      .nullable()
+      .optional()
+      .describe("Soft deletion timestamp"),
   })
   .meta({
     examples: [

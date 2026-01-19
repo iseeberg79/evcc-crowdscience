@@ -103,7 +103,7 @@ export const usersRouter = {
         email: input.id ? input.email : undefined,
       };
 
-      return await sqliteDb
+      await sqliteDb
         .update(users)
         .set(newValues)
         .where(
@@ -133,7 +133,7 @@ export const usersRouter = {
       }
 
       if (user?.deletedAt) {
-        return await sqliteDb
+        await sqliteDb
           .update(users)
           .set({
             ...input,
@@ -141,9 +141,10 @@ export const usersRouter = {
             deletedAt: null,
           })
           .where(eq(users.id, user.id));
+        return;
       }
 
-      return await sqliteDb
+      await sqliteDb
         .insert(users)
         .values({ ...input, passwordHash: await hashPassword(input.password) });
     }),
@@ -162,7 +163,7 @@ export const usersRouter = {
         .meta({ examples: [undefined] }),
     )
     .handler(async ({ input }) => {
-      return await sqliteDb
+      await sqliteDb
         .update(users)
         .set({ deletedAt: new Date() })
         .where(eq(users.id, input.id));
@@ -182,7 +183,7 @@ export const usersRouter = {
         .meta({ examples: [undefined] }),
     )
     .handler(async ({ input }) => {
-      return await sqliteDb
+      await sqliteDb
         .update(users)
         .set({ deletedAt: null })
         .where(eq(users.id, input.id));
