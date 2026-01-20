@@ -77,8 +77,8 @@ export const extractSessionDetails = authedProcedure
         |> yield(name: "${type}")`,
         {
           bucket: env.INFLUXDB_BUCKET,
-          start: input.startTime,
-          end: input.endTime,
+          start: input.startTime / 1000,
+          end: input.endTime / 1000,
           instanceId: input.instanceId,
           componentId: input.componentId,
         },
