@@ -15,10 +15,14 @@ table csv_import_loading_session {
   price_per_kwh real
   co2_per_kwh real
   line_hash text(255) [not null, unique]
+  created_at integer [default: `(unixepoch())`]
+  updated_at integer
+  deleted_at integer
 }
 
 table extracted_loading_session {
   id text(255) [pk, not null]
+  session_range_hash text(255) [not null, unique]
   start_time integer [not null]
   end_time integer [not null]
   duration integer [not null]
@@ -36,12 +40,25 @@ table extracted_loading_session {
   mode text(255)
   price real
   solar_percentage real
+  created_at integer [default: `(unixepoch())`]
+  updated_at integer
+  deleted_at integer
 }
 
 table instance {
   id text(255) [pk, not null]
-  last_job_run integer [default: `0`]
-  publicly_visible integer [not null, default: 0]
+  public_name text(255)
+  ignored integer [not null, default: 0]
+  first_received_data_at integer
+  last_received_data_at integer
+  last_extracted_data_at integer
+  created_at integer [default: `(unixepoch())`]
+  updated_at integer
+  deleted_at integer
+
+  indexes {
+    public_name [name: 'public_name_idx', unique]
+  }
 }
 
 table user {
@@ -51,6 +68,9 @@ table user {
   first_name text(255) [not null]
   last_name text(255) [not null]
   password_hash text(255) [not null]
+  created_at integer [default: `(unixepoch())`]
+  updated_at integer
+  deleted_at integer
 }
 
 ref csv_import_loading_session_instance_id_instance_id_fk: csv_import_loading_session.instance_id > instance.id [delete: no action, update: no action]

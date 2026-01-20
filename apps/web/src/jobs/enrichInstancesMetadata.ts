@@ -50,6 +50,9 @@ async function setFirstReceivedDataAt(instanceId: string) {
   }
 }
 
+/**
+ * Synchronize Metadata (like last update, pv capacity, loadpoint capacity) to the sqlite database
+ */
 export async function enrichInstancesMetadata() {
   // persist the active influxdb instances to the sqlite database
   const influxDbInstances = await getActiveInfluxDbInstances({}).then(

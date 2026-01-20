@@ -42,7 +42,9 @@ export const timeSeriesRouter = {
           field: z
             .string()
             .optional()
-            .describe("Optional field name to filter within the measurement type"),
+            .describe(
+              "Optional field name to filter within the measurement type",
+            ),
           componentId: z
             .string()
             .optional()
@@ -68,13 +70,11 @@ export const timeSeriesRouter = {
                 z
                   .tuple([
                     z.number().describe("Timestamp in milliseconds"),
-                    z
-                      .union([z.number(), z.string()])
-                      .nullable()
-                      .describe("Value"),
+                    z.any().describe("Value"),
                   ])
                   .describe("[timestamp, value] pair"),
               )
+              .optional()
               .describe("Array of data points"),
             metadata: z.object({
               componentId: z.string().optional().describe("Component ID"),
@@ -139,12 +139,13 @@ export const timeSeriesRouter = {
           |> filter(fn: (r) => r["_measurement"] == {{measurement}})
           ${input.field ? `|> filter(fn: (r) => r["_field"] == {{field}})` : ""}
           ${input.componentId ? `|> filter(fn: (r) => r["componentId"] == {{componentId}})` : ""}
-          ${input.timeRange.windowMinutes > 0
-          ? `
+          ${
+            input.timeRange.windowMinutes > 0
+              ? `
           |> aggregateWindow(every: {{windowMinutes}}, fn: last, createEmpty: true)
           |> fill(column: "_value", usePrevious: true)`
-          : ""
-        }
+              : ""
+          }
           |> yield(name: "last")
           `,
         {
