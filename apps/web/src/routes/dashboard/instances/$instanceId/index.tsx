@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   useMutation,
   useQuery,
@@ -71,8 +72,21 @@ function RouteComponent() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const { instanceId } = Route.useParams();
-  const queryClient = useQueryClient();
   const { timeRange } = useTimeSeriesSettings();
+  const queryClient = useQueryClient();
+
+  const activeSeries = useMemo(() => {
+    if (search.series && search.series.length > 0) {
+      return search.series;
+    }
+    return [
+      {
+        id: "default",
+        measurement: search.measurement,
+        field: search.field,
+      },
+    ];
+  }, [search.series, search.measurement, search.field]);
 
   const instance = useSuspenseQuery(
     orpc.instances.getById.queryOptions({ input: { id: instanceId } }),
@@ -150,17 +164,20 @@ function RouteComponent() {
       <InstanceTimeSeriesEcharts
         className="col-span-2 md:col-span-4 lg:col-span-8 lg:row-span-4"
         instanceId={instanceId}
-        measurement={search.measurement}
-        field={search.field}
-        handleMeasurementChange={(measurement, field) =>
+        series={activeSeries}
+        onSeriesChange={(series) =>
           navigate({
             replace: true,
-            search: (prev) => ({ ...prev, measurement, field }),
+            search: (prev) => ({ ...prev, series }),
           })
         }
         extractedSessions={extractedSessions.data}
         importedSessions={importedSessions.data}
         gaps={gaps.data}
+        pvMetaData={pvMetaData.data}
+        loadPointMetaData={loadPointMetaData.data}
+        batteryMetaData={batteryMetaData.data}
+        vehicleMetaData={vehicleMetaData.data}
       />
       <ChargingHourHistogram
         instanceIds={[instanceId]}

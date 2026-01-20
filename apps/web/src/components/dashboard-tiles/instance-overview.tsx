@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
+import { CopyableText } from "~/components/copyable-text";
 import { formatUnit } from "~/lib/utils";
 import { orpc } from "~/orpc/client";
 import { Card, CardContent } from "../ui/card";
@@ -32,6 +33,10 @@ export function InstanceOverview({
     <Card className={className}>
       <CardContent className="p-4">
         <div className="grid grid-cols-2 gap-x-12 gap-y-8 md:grid-cols-5">
+          <div className="col-span-2 flex flex-col gap-2 md:col-span-5">
+            <span className="text-sm text-muted-foreground">Instance ID</span>
+            <CopyableText text={instanceId} className="w-fit" />
+          </div>
           <InstanceOverviewInfo
             title="Sessions"
             subtitle="(total)"
@@ -71,6 +76,7 @@ export function InstanceOverview({
             subtitle="(total)"
             value={formatUnit(batteryMetaData.data.totalCapacity, "kWh", 1)}
           /> */}
+
         </div>
       </CardContent>
     </Card>

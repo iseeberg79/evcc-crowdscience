@@ -30,19 +30,6 @@ export const possibleMeasurementsConfig: MeasurementConfig = {
       },
     },
   },
-  circuits: {
-    label: "Circuits",
-    fields: {
-      power: {
-        label: "Power",
-        unit: "W",
-      },
-      current: {
-        label: "Current",
-        unit: "A",
-      },
-    },
-  },
   grid: {
     label: "Grid",
     fields: {
@@ -92,55 +79,10 @@ export const possibleMeasurementsConfig: MeasurementConfig = {
   },
   site: {
     label: "Site",
-    fields: {
-      power: {
-        label: "Power",
-        unit: "W",
-      },
-      energy: {
-        label: "Energy",
-        unit: "Wh",
-      },
-    },
-  },
-  statistics: {
-    label: "Statistics",
-    fields: {
-      value: {
-        label: "Value",
-        unit: "",
-      },
-    },
-  },
-  status: {
-    label: "Status",
-    fields: {
-      state: {
-        label: "State",
-        unit: "",
-      },
-    },
-  },
-  updated: {
-    label: "Updated",
-    fields: {
-      timestamp: {
-        label: "Timestamp",
-        unit: "",
-      },
-    },
+    fields: {},
   },
   vehicles: {
     label: "Vehicles",
-    fields: {
-      soc: {
-        label: "SOC",
-        unit: "%",
-      },
-      range: {
-        label: "Range",
-        unit: "km",
-      },
-    },
+    fields: {},
   },
 };

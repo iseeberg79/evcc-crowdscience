@@ -75,12 +75,21 @@ export type WindowedTimeSeriesData<
   endTimeStamp: number;
 };
 
+export const timeSeriesConfigSchema = z.object({
+  id: z.string().default(() => crypto.randomUUID()),
+  measurement: z.string(),
+  field: z.string().optional(),
+  componentId: z.string().optional(),
+});
+export type TimeSeriesConfig = z.infer<typeof timeSeriesConfigSchema>;
+
 export const singleInstanceRouteSearchSchema = z
   .object({
     expandedKey: z.string().optional(),
     timeRange: timeRangeUrlSchema,
     measurement: z.string().default("pv"),
     field: z.string().optional(),
+    series: z.array(timeSeriesConfigSchema).optional(),
   })
   .meta({
     examples: [

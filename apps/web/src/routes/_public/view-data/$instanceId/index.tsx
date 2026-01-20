@@ -1,3 +1,4 @@
+import React from "react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -69,9 +70,26 @@ function RouteComponent() {
     }),
   );
 
+  const activeSeries = React.useMemo(() => {
+    if (search.series && search.series.length > 0) {
+      return search.series;
+    }
+    return [
+      {
+        id: "default",
+        measurement: search.measurement,
+        field: search.field,
+      },
+    ];
+  }, [search.series, search.measurement, search.field]);
+
   return (
-    <>
-      <PageTitle>Deine Datenübersicht</PageTitle>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <PageTitle>Deine Datenübersicht</PageTitle>
+        <div className="flex flex-wrap items-center gap-2"></div>
+      </div>
+
       <div className="grid w-full grid-cols-2 gap-2 md:grid-cols-4 md:gap-4 lg:grid-cols-8 xl:grid-cols-12">
         <StateTimelineChart
           timeRange={timeRange}
@@ -81,16 +99,19 @@ function RouteComponent() {
         <InstanceTimeSeriesEcharts
           className="col-span-full"
           instanceId={instanceId}
-          measurement={search.measurement}
-          field={search.field}
-          handleMeasurementChange={(measurement, field) =>
+          series={activeSeries}
+          onSeriesChange={(series) =>
             navigate({
               replace: true,
-              search: (prev) => ({ ...prev, measurement, field }),
+              search: (prev) => ({ ...prev, series }),
             })
           }
           extractedSessions={extractedSessions.data}
           gaps={gaps.data}
+          pvMetaData={pvMetaData.data}
+          loadPointMetaData={loadpointMetaData.data}
+          batteryMetaData={batteryMetaData.data}
+          vehicleMetaData={vehicleMetaData.data}
         />
         <MetadataGraph
           title="Site Metadata"
@@ -167,6 +188,6 @@ function RouteComponent() {
           className="col-span-2"
         />
       </div>
-    </>
+    </div>
   );
 }

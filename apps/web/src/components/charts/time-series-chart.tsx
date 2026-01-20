@@ -1,11 +1,11 @@
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries } from "@tanstack/react-query";
 import type { EChartsOption } from "echarts";
 import * as echarts from "echarts";
 import ReactECharts from "echarts-for-react";
 
 import { getChartColor, sharedChartOptions } from "~/constants";
 import { useTimeSeriesSettings } from "~/hooks/use-timeseries-settings";
+import type { TimeSeriesConfig } from "~/lib/globalSchemas";
 import { possibleMeasurementsConfig } from "~/lib/time-series-config";
 import { cn, formatUnit } from "~/lib/utils";
 import { orpc } from "~/orpc/client";
@@ -16,39 +16,55 @@ import {
   type ExtractedSession,
 } from "~/orpc/loadingSessions/types";
 import type { Gap } from "~/orpc/timeSeries/types";
+import type { MetaData } from "~/orpc/types";
 import { LoadingSpinnerCard } from "../loading-spinner-card";
-import { TimeSeriesSettingsPicker } from "../time-series-settings-picker";
-import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
-import { Combobox } from "../ui/combo-box";
+import { SeriesConfigurator } from "../series-configurator";
+import { Card, CardContent } from "../ui/card";
 
 export function InstanceTimeSeriesEcharts({
   instanceId,
-  measurement,
-  field,
-  handleMeasurementChange,
+  series,
+  onSeriesChange,
   className,
   importedSessions,
   extractedSessions,
   gaps,
+  pvMetaData,
+  loadPointMetaData,
+  batteryMetaData,
+  vehicleMetaData,
 }: {
   instanceId: string;
-  measurement: string;
-  field?: string;
-  handleMeasurementChange: (
-    measurement: string,
-    field?: string,
-  ) => void;
+  series: TimeSeriesConfig[];
+  onSeriesChange: (series: TimeSeriesConfig[]) => void;
   className?: string;
   importedSessions?: CsvImportLoadingSession[];
   extractedSessions?: ExtractedSession[];
   gaps?: Gap[];
+  pvMetaData?: MetaData;
+  loadPointMetaData?: MetaData;
+  batteryMetaData?: MetaData;
+  vehicleMetaData?: MetaData;
 }) {
   const { timeRange } = useTimeSeriesSettings();
-  const { data, isFetching, isLoading } = useQuery(
-    orpc.timeSeries.getData.queryOptions({
-      input: { measurement, instanceId, timeRange, field },
-    }),
-  );
+
+  const queries = useQueries({
+    queries: series.map((s) =>
+      orpc.timeSeries.getData.queryOptions({
+        input: {
+          measurement: s.measurement,
+          instanceId,
+          timeRange,
+          field: s.field,
+          componentId: s.componentId,
+        },
+      }),
+    ),
+  });
+
+  const isLoading = queries.some((q) => q.isLoading);
+  const isFetching = queries.some((q) => q.isFetching);
+  const hasData = queries.some((q) => q.data?.length && q.data.length > 0);
 
   function handleChartClick(params: echarts.ECElementEvent) {
     if (params.componentType === "markArea") {
@@ -62,29 +78,6 @@ export function InstanceTimeSeriesEcharts({
       }
     }
   }
-
-  const fieldOptions = useMemo(() => {
-    const options: Record<
-      string,
-      { value: string; label: string; unit?: string }
-    > = {};
-
-    for (const [key, value] of Object.entries(
-      possibleMeasurementsConfig?.[measurement]?.fields,
-    )) {
-      options[key] ??= {
-        value: key,
-        label: value.label,
-        unit: value?.unit,
-      };
-    }
-
-    return Object.values(options);
-  }, [measurement]);
-
-  const fieldOption = fieldOptions.find(
-    (option) => option.value === field,
-  );
 
   const option: EChartsOption = {
     ...sharedChartOptions,
@@ -151,10 +144,7 @@ export function InstanceTimeSeriesEcharts({
       type: "value",
       scale: true,
       axisLabel: {
-        formatter: (value) =>
-          fieldOption?.unit
-            ? formatUnit(value, fieldOption.unit)
-            : value.toString(),
+        formatter: (value) => value.toString(), // TODO: Improve unit formatting for mixed units
       },
       axisLine: {
         lineStyle: {
@@ -169,52 +159,72 @@ export function InstanceTimeSeriesEcharts({
       },
     },
     series: [
-      ...(data ?? []).map((table, index) => {
-        const color = getChartColor(index);
-        const nameParts: string[] = [];
-        if (table.metadata.componentId)
-          nameParts.push(`Component: ${table.metadata.componentId}`);
-        const name =
-          nameParts.length > 0
-            ? nameParts.join(" ")
-            : (fieldOption?.label ?? table.field);
+      ...queries.flatMap((query, queryIndex) => {
+        const config = series[queryIndex];
+        const measurementConfig =
+          possibleMeasurementsConfig[config.measurement];
 
-        return {
-          name,
-          type: "line",
-          showSymbol: false,
-          connectNulls: false,
-          lineStyle: {
-            width: 2,
-            color: color.stroke,
-          },
-          itemStyle: {
-            color: color.stroke,
-          },
-          emphasis: {
-            focus: "series",
+        return (query.data ?? []).map((table, tableIndex) => {
+          // Identify field config to get label and unit
+          const fieldConfig = measurementConfig?.fields[table.field];
+
+          // Global index for color stability (simple approximation)
+          const seriesGlobalIndex = queryIndex * 10 + tableIndex;
+          const color = getChartColor(seriesGlobalIndex);
+
+          const nameParts: string[] = [];
+
+          // Add measurement label if there are multiple measurements or to be explicit
+          if (measurementConfig?.label) {
+            nameParts.push(measurementConfig.label);
+          }
+
+          if (table.metadata.componentId)
+            nameParts.push(`Component: ${table.metadata.componentId}`);
+
+          const label = fieldConfig?.label ?? table.field;
+          // Avoid redundancy if measurement label is same as field label (unlikely but safe)
+          nameParts.push(label);
+
+          const name = nameParts.join(" - ");
+
+          return {
+            name,
+            type: "line",
+            showSymbol: false,
+            connectNulls: false,
             lineStyle: {
+              width: 2,
               color: color.stroke,
             },
+            itemStyle: {
+              color: color.stroke,
+            },
+            emphasis: {
+              focus: "series",
+              lineStyle: {
+                color: color.stroke,
+              },
+              areaStyle: {
+                opacity: 0.3,
+                color: color.fill,
+              },
+            },
+            blur: {
+              areaStyle: {
+                opacity: 0.1,
+              },
+              lineStyle: {
+                opacity: 0.3,
+              },
+            },
+            data: table.data,
             areaStyle: {
               opacity: 0.3,
               color: color.fill,
             },
-          },
-          blur: {
-            areaStyle: {
-              opacity: 0.1,
-            },
-            lineStyle: {
-              opacity: 0.3,
-            },
-          },
-          data: table.data,
-          areaStyle: {
-            opacity: 0.3,
-            color: color.fill,
-          },
-        } satisfies echarts.SeriesOption;
+          } satisfies echarts.SeriesOption;
+        });
       }),
       {
         name: "Imported Sessions",
@@ -288,12 +298,9 @@ export function InstanceTimeSeriesEcharts({
 
   return (
     <Card className={cn("flex flex-col", className)}>
-      <CardHeader className="flex flex-col gap-2">
-        <TimeSeriesSettingsPicker className="col-span-3 lg:col-span-full" />
-      </CardHeader>
-      <CardContent className="relative aspect-video max-h-[1000px] min-h-[300px] grow">
+      <CardContent className="relative aspect-video max-h-[1000px] min-h-[300px] grow p-6">
         {isLoading && <LoadingSpinnerCard message="Loading chart data" />}
-        {data?.length && data.length > 0 ? (
+        {hasData ? (
           <ReactECharts
             option={option}
             onChartReady={(instance) => {
@@ -310,36 +317,20 @@ export function InstanceTimeSeriesEcharts({
           <div className="flex h-full items-center justify-center text-muted-foreground">
             {isLoading || isFetching
               ? "Loading..."
-              : field && fieldOptions.length === 0
-                ? "No data available for selected field"
+              : series.length === 0
+                ? "No series configured"
                 : "No data available"}
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex flex-row flex-wrap gap-2">
-        <Combobox
-          className="w-full md:w-[230px]"
-          options={Object.entries(possibleMeasurementsConfig).map(
-            ([key, value]) => ({
-              value: key,
-              label: value.label,
-            }),
-          )}
-          value={measurement}
-          onChange={(value) => {
-            handleMeasurementChange(
-              value,
-              Object.keys(possibleMeasurementsConfig[value].fields)[0],
-            );
-          }}
-        />
-        <Combobox
-          className="w-full md:w-[230px]"
-          options={fieldOptions}
-          value={field}
-          onChange={(value) => handleMeasurementChange(measurement, value)}
-        />
-      </CardFooter>
+      <SeriesConfigurator
+        series={series}
+        onChange={onSeriesChange}
+        pvMetaData={pvMetaData}
+        loadPointMetaData={loadPointMetaData}
+        batteryMetaData={batteryMetaData}
+        vehicleMetaData={vehicleMetaData}
+      />
     </Card>
   );
 }
