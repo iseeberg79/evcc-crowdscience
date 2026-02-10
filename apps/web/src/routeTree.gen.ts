@@ -20,7 +20,10 @@ import { Route as ApiSeedRouteImport } from './routes/api/seed'
 import { Route as ApiHealthcheckRouteImport } from './routes/api/healthcheck'
 import { Route as ApiSplatRouteImport } from './routes/api/$'
 import { Route as PublicMitmachenRouteImport } from './routes/_public/mitmachen'
+import { Route as PublicInfosRouteImport } from './routes/_public/infos'
 import { Route as PublicImpressumRouteImport } from './routes/_public/impressum'
+import { Route as PublicHintergrundRouteImport } from './routes/_public/hintergrund'
+import { Route as PublicDetailsRouteImport } from './routes/_public/details'
 import { Route as PublicDatenschutzRouteImport } from './routes/_public/datenschutz'
 import { Route as DashboardInstancesRouteRouteImport } from './routes/dashboard/instances/route'
 import { Route as DashboardInstancesIndexRouteImport } from './routes/dashboard/instances/index'
@@ -86,9 +89,24 @@ const PublicMitmachenRoute = PublicMitmachenRouteImport.update({
   path: '/mitmachen',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const PublicInfosRoute = PublicInfosRouteImport.update({
+  id: '/infos',
+  path: '/infos',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const PublicImpressumRoute = PublicImpressumRouteImport.update({
   id: '/impressum',
   path: '/impressum',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicHintergrundRoute = PublicHintergrundRouteImport.update({
+  id: '/hintergrund',
+  path: '/hintergrund',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicDetailsRoute = PublicDetailsRouteImport.update({
+  id: '/details',
+  path: '/details',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicDatenschutzRoute = PublicDatenschutzRouteImport.update({
@@ -154,7 +172,10 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/dashboard/instances': typeof DashboardInstancesRouteRouteWithChildren
   '/datenschutz': typeof PublicDatenschutzRoute
+  '/details': typeof PublicDetailsRoute
+  '/hintergrund': typeof PublicHintergrundRoute
   '/impressum': typeof PublicImpressumRoute
+  '/infos': typeof PublicInfosRoute
   '/mitmachen': typeof PublicMitmachenRoute
   '/api/$': typeof ApiSplatRoute
   '/api/healthcheck': typeof ApiHealthcheckRoute
@@ -175,7 +196,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/datenschutz': typeof PublicDatenschutzRoute
+  '/details': typeof PublicDetailsRoute
+  '/hintergrund': typeof PublicHintergrundRoute
   '/impressum': typeof PublicImpressumRoute
+  '/infos': typeof PublicInfosRoute
   '/mitmachen': typeof PublicMitmachenRoute
   '/api/$': typeof ApiSplatRoute
   '/api/healthcheck': typeof ApiHealthcheckRoute
@@ -199,7 +223,10 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/dashboard/instances': typeof DashboardInstancesRouteRouteWithChildren
   '/_public/datenschutz': typeof PublicDatenschutzRoute
+  '/_public/details': typeof PublicDetailsRoute
+  '/_public/hintergrund': typeof PublicHintergrundRoute
   '/_public/impressum': typeof PublicImpressumRoute
+  '/_public/infos': typeof PublicInfosRoute
   '/_public/mitmachen': typeof PublicMitmachenRoute
   '/api/$': typeof ApiSplatRoute
   '/api/healthcheck': typeof ApiHealthcheckRoute
@@ -224,7 +251,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard/instances'
     | '/datenschutz'
+    | '/details'
+    | '/hintergrund'
     | '/impressum'
+    | '/infos'
     | '/mitmachen'
     | '/api/$'
     | '/api/healthcheck'
@@ -245,7 +275,10 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/datenschutz'
+    | '/details'
+    | '/hintergrund'
     | '/impressum'
+    | '/infos'
     | '/mitmachen'
     | '/api/$'
     | '/api/healthcheck'
@@ -268,7 +301,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard/instances'
     | '/_public/datenschutz'
+    | '/_public/details'
+    | '/_public/hintergrund'
     | '/_public/impressum'
+    | '/_public/infos'
     | '/_public/mitmachen'
     | '/api/$'
     | '/api/healthcheck'
@@ -376,11 +412,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicMitmachenRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_public/infos': {
+      id: '/_public/infos'
+      path: '/infos'
+      fullPath: '/infos'
+      preLoaderRoute: typeof PublicInfosRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_public/impressum': {
       id: '/_public/impressum'
       path: '/impressum'
       fullPath: '/impressum'
       preLoaderRoute: typeof PublicImpressumRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/hintergrund': {
+      id: '/_public/hintergrund'
+      path: '/hintergrund'
+      fullPath: '/hintergrund'
+      preLoaderRoute: typeof PublicHintergrundRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/details': {
+      id: '/_public/details'
+      path: '/details'
+      fullPath: '/details'
+      preLoaderRoute: typeof PublicDetailsRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_public/datenschutz': {
@@ -458,7 +515,10 @@ declare module '@tanstack/react-router' {
 
 interface PublicRouteRouteChildren {
   PublicDatenschutzRoute: typeof PublicDatenschutzRoute
+  PublicDetailsRoute: typeof PublicDetailsRoute
+  PublicHintergrundRoute: typeof PublicHintergrundRoute
   PublicImpressumRoute: typeof PublicImpressumRoute
+  PublicInfosRoute: typeof PublicInfosRoute
   PublicMitmachenRoute: typeof PublicMitmachenRoute
   PublicViewDataIndexRoute: typeof PublicViewDataIndexRoute
   PublicViewDataInstanceIdSessionRoute: typeof PublicViewDataInstanceIdSessionRoute
@@ -467,7 +527,10 @@ interface PublicRouteRouteChildren {
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicDatenschutzRoute: PublicDatenschutzRoute,
+  PublicDetailsRoute: PublicDetailsRoute,
+  PublicHintergrundRoute: PublicHintergrundRoute,
   PublicImpressumRoute: PublicImpressumRoute,
+  PublicInfosRoute: PublicInfosRoute,
   PublicMitmachenRoute: PublicMitmachenRoute,
   PublicViewDataIndexRoute: PublicViewDataIndexRoute,
   PublicViewDataInstanceIdSessionRoute: PublicViewDataInstanceIdSessionRoute,

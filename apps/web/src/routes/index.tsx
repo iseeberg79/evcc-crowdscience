@@ -69,16 +69,8 @@ function Home() {
                   Deine evcc Daten für die Energiewende
                 </h1>
                 <p className="mx-auto max-w-3xl text-lg text-balance text-muted-foreground sm:text-xl md:text-2xl">
-                  Crowdscience-Projekt der{" "}
-                  <a
-                    href="https://solar.htw-berlin.de/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    HTW Berlin
-                  </a>{" "}
-                  zur Erforschung dezentraler Energiesysteme
+                  Hilf uns, zu verstehen, wie Elektrofahrzeuge im Alltag
+                  wirklich geladen werden. Anonym, schnell, wissenschaftlich.
                 </p>
               </div>
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -130,83 +122,57 @@ function Home() {
             </div>
           </HomePageSection>
 
-          {/* Motivation */}
-          <HomePageSection id="motivation">
+          {/* Warum */}
+          <HomePageSection id="warum">
             <div className="mx-auto max-w-3xl space-y-6">
               <H2>Warum brauchen wir deine Daten?</H2>
-              <P className="text-lg text-muted-foreground">
-                In unserer Energieforschung von dezentralen Energiesystemen sind
-                wir auf Zeitreihen-Daten angewiesen. Sie dienen als
-                Eingangsdaten von Simulationen und helfen uns die Systeme und
-                Interaktionen aus Solaranlage, Batterie, Elektroauto und/oder
-                Wärmepumpen besser zu verstehen.
-              </P>
-              <P className="text-lg text-muted-foreground">
-                Nur so können wir Lösungen entwickeln und technische
-                Herausforderungen antizipieren, die wir für die Energiewende
-                brauchen. Hinter unserer Arbeit steht dabei keine Firma und kein
-                Profitinteresse sondern die Überzeugung, dass wir mit unserer
-                Forschung die Energiewende unterstützen wollen.
-              </P>
-              <P className="text-lg text-muted-foreground">
-                Das Problem: Es gibt aktuell keinen vergleichbaren offenen
-                Datensatz mit realen Daten aus dezentralen Energiesystemen.
-              </P>
-            </div>
-          </HomePageSection>
-
-          <Separator className="mx-auto w-full max-w-(--max-content-width)" />
-
-          {/* Das ist der Plan */}
-          <HomePageSection id="plan">
-            <div className="mx-auto max-w-3xl space-y-6">
-              <H2>Das ist der Plan</H2>
-              <P className="text-lg text-muted-foreground">
-                Als Nutzende von evcc hantiert ihr täglich mit diesen für uns
-                zentralen Daten. Wir möchten unsere Forschung und die Forschung
-                anderer gerne mit eueren Datenspenden voranbringen.
-              </P>
-              <P className="text-lg text-muted-foreground">
-                Hierfür wollen wir anonymisierte Daten eurer evcc aufzeichnen
-                und als offenen Datensatz zur Verfügung stellen. Dies wäre ein
-                einmaliger Datensatz, der je nach Anzahl an Teilnehmenden einen
-                wichtigen Beitrag zur dezentralen Energiesystemforschung leisten
-                kann.
-              </P>
-              <P className="text-lg text-muted-foreground">
-                Wichtig ist uns: Neben einer wünschenswerten Detailtiefe des
-                Datensatzes sollen durch strikte Anonymisierung keine Abstriche
-                beim Datenschutz gemacht werden!
-              </P>
-            </div>
-          </HomePageSection>
-
-          <Separator className="mx-auto w-full max-w-(--max-content-width)" />
-
-          {/* Mehrwert */}
-          <HomePageSection id="mehrwert">
-            <div className="mx-auto max-w-3xl space-y-6">
-              <H2>Was ist der Mehrwert?</H2>
-
-              <div className="space-y-4">
-                <H3>Für die Forschung</H3>
-                <P className="text-muted-foreground">
-                  Ein einmaliger offener Datensatz mit realen Daten aus
-                  dezentralen Energiesystemen, der reproduzierbare Analysen
-                  ermöglicht und fundierte Entscheidungen jenseits von Marketing
-                  unterstützt.
-                </P>
+              {/* Add list */}
+              <ul className="ml-6 list-disc space-y-2 text-lg text-muted-foreground">
+                <li>
+                  Modelle basieren oft auf Annahmen – wir wollen reale Nutzung
+                  sehen.
+                </li>
+                <li>
+                  Ladezeiten, Ladeleistungen, Ansteckverhalten und PV Anteile -
+                  sind entscheidend für die Forschung.
+                </li>
+                <li>Nur die Community kann solche Daten liefern.</li>
+              </ul>
+              <div className="mt-8 flex justify-center">
+                <Link
+                  to="/infos"
+                  hash="hintergrund"
+                  className="group inline-flex items-center gap-3 rounded-md px-2 py-1 text-lg font-semibold text-primary transition-colors hover:text-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                  aria-label="Mehr Infos"
+                >
+                  <span>Mehr Infos</span>
+                </Link>
               </div>
+            </div>
+          </HomePageSection>
 
-              <div className="space-y-4">
-                <H3>Für die Community</H3>
-                <P className="text-muted-foreground">
-                  Auch ohne eigene InfluxDB die Möglichkeit der langfristigen
-                  Speicherung von Zeitreihen mit Visualisierungen. Ein wichtiger
-                  Mehrwert darüber hinaus sind geplante features, wie ein
-                  Vergleich mit anderen Instanzen – aktuell nur unter Bekannten
-                  möglich.
-                </P>
+          <Separator className="mx-auto w-full max-w-(--max-content-width)" />
+
+          {/* Was */}
+          <HomePageSection id="was">
+            <div className="mx-auto max-w-3xl space-y-6">
+              <H2>Was passiert mit deinen Daten?</H2>
+              {/* Add list */}
+              <ul className="ml-6 list-disc space-y-2 text-lg text-muted-foreground">
+                <li>vollständig anonym</li>
+                <li>wissenschaftliche Auswertung und Aufbereitung</li>
+                <li>Open Data: Veröffentlichung für weitere Forschung.</li>
+                <li>Online Visualisierung deiner anonymen Daten.</li>
+              </ul>
+              <div className="mt-8 flex justify-center">
+                <Link
+                  to="/infos"
+                  hash="hintergrund"
+                  className="group inline-flex items-center gap-3 rounded-md px-2 py-1 text-lg font-semibold text-primary transition-colors hover:text-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                  aria-label="Mehr Infos"
+                >
+                  <span>Mehr Infos</span>
+                </Link>
               </div>
             </div>
           </HomePageSection>
@@ -216,63 +182,35 @@ function Home() {
           {/* Wie funktioniert's */}
           <HomePageSection id="so-funktionierts" className="bg-muted/30">
             <div className="mx-auto max-w-3xl space-y-6">
-              <H2>Ablauf</H2>
-              <P className="text-lg text-muted-foreground">
-                Wir haben uns für eine Token-basierte Anmeldung und
-                MQTT-Datenspende entschieden. Die Daten werden in InfluxDB
-                gespeichert und sind auf der Webseite unter Angabe des Tokens
-                für euch einsehbar.
-              </P>
-              <P className="text-lg text-muted-foreground">
-                Alle Daten aus evcc, die persönliche Informationen enthalten
-                könnten werden nicht gespeichert. Wer die Zuordnung des Tokens
-                zu euch nicht kennt kann die Daten nicht zuordnen
-                (Pseudonymisierung, die nur euch bekannt ist).
-              </P>
-              <P className="text-lg text-muted-foreground">
-                Wenn ihr nicht mehr mitmachen wollt, beendet ihr die Datenspende
-                einfach, indem ihr unseren MQTT Broker wieder aus evcc entfernt.
-                Mitglieder der Forschungsgruppe haben die Möglichkeit, alle
-                Instanzen zu betrachten und zu vergleichen.
-              </P>
+              <H2>So einfach geht’s!</H2>
+              <ul className="ml-6 list-decimal space-y-2 text-lg text-muted-foreground">
+                <li>MQTT-Token hier generieren</li>
+                <li>Token in evcc Einstellungen eintragen</li>
+                <li>
+                  Fertig! Ab sofort sendet dein evcc anonym Ladedaten zu uns.
+                </li>
+              </ul>
               <div className="mt-8 flex justify-center">
                 <Button asChild size="lg" className="group">
                   <Link to="/mitmachen">
-                    Zur Anleitung
+                    Jetzt mitmachen
                     <ArrowRightIcon className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </Link>
                 </Button>
               </div>
-            </div>
-          </HomePageSection>
-
-          <Separator className="mx-auto w-full max-w-(--max-content-width)" />
-
-          {/* Datenschutz */}
-          <HomePageSection id="datenschutz">
-            <div className="mx-auto max-w-3xl space-y-6">
-              <H2>Datenschutz & Anonymisierung</H2>
               <P className="text-lg text-muted-foreground">
-                Deine Anonymität hat höchste Priorität:
+                Weitere Infos gibt es{" "}
+                <Link
+                  to="/infos"
+                  hash="ablauf"
+                  className="text-primary hover:underline"
+                >
+                  hier
+                </Link>
+                . <br />
+                Keine Lust mehr? Einfach Token in den Einstellungen löschen und
+                du bist wieder raus.
               </P>
-              <ul className="ml-6 list-disc space-y-2 text-lg text-muted-foreground">
-                <li>
-                  Keine Speicherung personenbezogener Informationen aus evcc
-                </li>
-                <li>
-                  Pseudonymisierung per Token – ohne Kenntnis des Tokens keine
-                  Zuordnung möglich
-                </li>
-                <li>Datenspende jederzeit in evcc deaktivierbar</li>
-                <li>Keine IP-Adressen oder Standortdaten</li>
-              </ul>
-              <div className="mt-6">
-                <Button asChild variant="outline">
-                  <Link to="/datenschutz" target="_blank" title="Datenschutz">
-                    Datenschutzerklärung lesen
-                  </Link>
-                </Button>
-              </div>
             </div>
           </HomePageSection>
 
@@ -336,6 +274,39 @@ function Home() {
               <Accordion type="multiple" className="w-full">
                 <AccordionItem value="item-1">
                   <AccordionTrigger className="text-left text-lg font-semibold">
+                    Ist die Teilnahme anonym?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">
+                    Ja. Wir erheben keine personenbezogenen Daten und speichern
+                    alle anderen Daten nur unter einem Pseudonym ab.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-2">
+                  <AccordionTrigger className="text-left text-lg font-semibold">
+                    Wie lange dauert die Teilnahme?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">
+                    Die Einrichtung geht in 2–3 Minuten. Danach kannst du
+                    Spenden so lange wie du möchtest. Gut für uns wäre ein Jahr
+                    oder länger – Aber du hast die Kontrolle!
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-4">
+                  <AccordionTrigger className="text-left text-lg font-semibold">
+                    Wie funktioniert die Pseudonomisierung?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">
+                    Die Daten werden durch einen Token pseudonymisiert, den nur
+                    du kennst. Nur du kannst die Zuordnung zwischen Token und
+                    deiner evcc-Instanz herstellen. Dies schützt deine
+                    Privatsphäre optimal.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-5">
+                  <AccordionTrigger className="text-left text-lg font-semibold">
                     Welche Daten werden gespeichert?
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">
@@ -346,23 +317,14 @@ function Home() {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-2">
+                <AccordionItem value="item-6">
                   <AccordionTrigger className="text-left text-lg font-semibold">
-                    Wie funktioniert die Pseudonymisierung?
+                    Wer hat Zugriff auf die Daten?
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">
-                    Die Daten werden durch einen Token pseudonymisiert, den nur
-                    du kennst. Nur du kannst die Zuordnung zwischen Token und
-                    deiner evcc-Instanz herstellen. Dies schützt deine
-                    Privatsphäre optimal.
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="item-4">
-                  <AccordionTrigger className="text-left text-lg font-semibold">
-                    Wie kann ich meine Daten einsehen?
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">
+                    Erstmal nur das Forschungsteam der HTW Berlin. Wir wollen
+                    die Daten später gesammelt als Open-Data der
+                    wissenschaftlichen Community zur Verfügung stellen. <br />
                     Mit deinem Token kannst du unter{" "}
                     <Link
                       to="/view-data"
@@ -370,38 +332,49 @@ function Home() {
                     >
                       Meine Daten
                     </Link>{" "}
-                    jederzeit deine Visualisierungen ansehen und mit anderen
-                    (anonymisierten) Instanzen vergleichen.
+                    jederzeit deine Visualisierungen ansehen.
                   </AccordionContent>
                 </AccordionItem>
-
-                <AccordionItem value="item-5">
+                <AccordionItem value="item-7">
                   <AccordionTrigger className="text-left text-lg font-semibold">
-                    Wer hat Zugriff auf die Daten?
+                    Bekomme ich Ergebnisse zurück?
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">
-                    Zugriff haben nur die Wissenschaftler*innen des
-                    Forschungsprojekts{" "}
+                    Ja, wir veröffentlichen aggregierte Auswertungen und wollen
+                    die Daten als Open-Data der wissenschaftlichen Community zur
+                    Verfügung stellen.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-8">
+                  <AccordionTrigger className="text-left text-lg font-semibold">
+                    Wie kann ich bereits erhobene Daten spenden?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">
+                    Wenn ihr bereits Daten erhoben habt, die ihr teilen wollt,
+                    schreibt eine E-Mail an{" "}
                     <a
-                      href="https://solar.htw-berlin.de/forschungsgruppe/wallbox-inspektion/"
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href="mailto:solar@htw-berlin.de"
                       className="text-primary hover:underline"
                     >
-                      Wallboxinspektion
-                    </a>{" "}
-                    an der HTW Berlin. Die Daten werden für wissenschaftliche
-                    Zwecke genutzt.
+                      solar@htw-berlin.de
+                    </a>
                   </AccordionContent>
                 </AccordionItem>
-
-                <AccordionItem value="item-6">
+                <AccordionItem value="item-9">
                   <AccordionTrigger className="text-left text-lg font-semibold">
-                    Wie lange läuft das Projekt?
+                    Ich nutze MQTT bereits für Homeassistant. Wie kann ich
+                    mitmachen?
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">
-                    Das Projekt läuft erstmal bis Ende 2025. Bei Anklang aus der
-                    Community auch langfristig.
+                    Wer MQTT für Homeassistant verwendet kann eine MQTT-Bridge
+                    nutzen, diese sendet dann nur die evcc-Daten an uns weiter.
+                    Zusammen finden wir eine Lösung!{" "}
+                    <a
+                      href="mailto:solar@htw-berlin.de"
+                      className="text-primary hover:underline"
+                    >
+                      solar@htw-berlin.de
+                    </a>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
