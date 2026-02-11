@@ -141,7 +141,7 @@ function Home() {
               <div className="mt-8 flex justify-center">
                 <Link
                   to="/infos"
-                  hash="hintergrund"
+                  hash="motivation"
                   className="group inline-flex items-center gap-3 rounded-md px-2 py-1 text-lg font-semibold text-primary transition-colors hover:text-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                   aria-label="Mehr Infos"
                 >
@@ -167,7 +167,7 @@ function Home() {
               <div className="mt-8 flex justify-center">
                 <Link
                   to="/infos"
-                  hash="hintergrund"
+                  hash="plan"
                   className="group inline-flex items-center gap-3 rounded-md px-2 py-1 text-lg font-semibold text-primary transition-colors hover:text-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                   aria-label="Mehr Infos"
                 >
