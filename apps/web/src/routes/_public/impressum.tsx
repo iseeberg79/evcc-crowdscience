@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import bundesministerium from "~/assets/images/bundesministerium-fur-wirtschaft-und-klimaschutz-seeklogo.png";
 import { H3, P, PageTitle } from "~/components/ui/typography";
 
 export const Route = createFileRoute("/_public/impressum")({
@@ -34,12 +35,26 @@ function RouteComponent() {
       <P>
         E-Mail:{" "}
         <a
-          href="mailto:lukas.frey@htw-berlin.de"
+          href="mailto:solar@htw-berlin.de"
           className="underline hover:text-primary"
         >
-          lukas.frey@htw-berlin.de
+          solar@htw-berlin.de
         </a>
       </P>
+      <H3>Förderung</H3>
+      <P>
+        Dieses Portal wurde im Forschungsprojekt Wallboxinspektion erstellt mit
+        Mitteln des Bundesministeriums für Wirtschaft und Klimaschutz unter dem
+        Förderkennzeichen 01MV23027B gefördert. Die Verantwortung für den Inhalt
+        dieser Webseite liegt der HTW Berlin.
+      </P>
+      <div className="flex items-center justify-center py-4">
+        <img
+          src={bundesministerium}
+          alt="Logo des Bundesministeriums für Wirtschaft und Klimaschutz"
+          className="w-48"
+        />
+      </div>
       <P>Impressumsangaben gemäß § 5 Telemediengesetz (TMG)</P>
     </>
   );

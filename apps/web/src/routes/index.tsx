@@ -393,7 +393,7 @@ function Home() {
               </P>
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Button asChild size="lg" variant="outline">
-                  <a href="mailto:lukas.frey@htw-berlin.de">
+                  <a href="mailto:solar@htw-berlin.de">
                     Kontakt aufnehmen
                   </a>
                 </Button>

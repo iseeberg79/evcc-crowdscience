@@ -34,18 +34,10 @@ export function PrivacyText() {
       <P>
         E-Mail:{" "}
         <a
-          href="mailto:lukas.frey@htw-berlin.de"
+          href="mailto:solar@htw-berlin.de"
           className="underline hover:text-primary"
         >
           solar@htw-berlin.de
-        </a>
-        <br />
-        Für technische Anfragen:{" "}
-        <a
-          href="mailto:lukas.frey@htw-berlin.de"
-          className="underline hover:text-primary"
-        >
-          lukas.frey@htw-berlin.de
         </a>
       </P>
 
@@ -123,7 +115,7 @@ export function PrivacyText() {
         </li>
       </List>
 
-      <H3>5. Rechtsgrundlage der DatenVerarbeitung</H3>
+      <H3>5. Rechtsgrundlage der Datenverarbeitung</H3>
       <P>
         Die Verarbeitung der Daten erfolgt auf Grundlage von Artikel 6 Abs. 1
         lit. a DSGVO (Einwilligung).
