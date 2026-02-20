@@ -24,9 +24,6 @@ import { orpc } from "~/orpc/client";
 
 export const Route = createFileRoute("/dashboard/users")({
   component: RouteComponent,
-  staticData: {
-    routeTitle: "Users",
-  },
   validateSearch: z
     .object({
       action: z.literal("edit"),
@@ -40,6 +37,7 @@ export const Route = createFileRoute("/dashboard/users")({
   loaderDeps: ({ search }) => ({
     search,
   }),
+  beforeLoad: () => ({ routeTitle: "Users" }),
   loader: async ({ context, deps }) => {
     const promises = [];
     if (deps.search.action === "edit") {
@@ -77,7 +75,7 @@ function RouteComponent() {
 
   const invalidateUsers = () =>
     queryClient.invalidateQueries({
-      queryKey: orpc.users.getMultiple.queryKey(),
+      queryKey: orpc.users.getMultiple.queryKey({ input: {} }),
     });
 
   const deleteUserMutation = useMutation({
@@ -126,7 +124,7 @@ function RouteComponent() {
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="ml-auto flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                      className="ml-auto flex size-8 p-0 data-[state=open]:bg-muted"
                     >
                       <MoreHorizontalIcon />
                       <span className="sr-only">Open menu</span>

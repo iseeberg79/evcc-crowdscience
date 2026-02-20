@@ -17,7 +17,9 @@ async function createInstance(id: string, influxDbInstance: InfluxDbInstance) {
     .values({
       id,
       publicName: generatePublicName(),
-      lastReceivedDataAt: influxDbInstance.lastUpdate,
+      lastReceivedDataAt: influxDbInstance.lastUpdate
+        ? new Date(influxDbInstance.lastUpdate)
+        : null,
     })
     .returning()
     .then((instances) => instances[0]);
@@ -48,6 +50,9 @@ async function setFirstReceivedDataAt(instanceId: string) {
   }
 }
 
+/**
+ * Synchronize Metadata (like last update, pv capacity, loadpoint capacity) to the sqlite database
+ */
 export async function enrichInstancesMetadata() {
   // persist the active influxdb instances to the sqlite database
   const influxDbInstances = await getActiveInfluxDbInstances({}).then(
@@ -84,7 +89,7 @@ export async function enrichInstancesMetadata() {
     if (influxDbInstance.lastUpdate) {
       await sqliteDb
         .update(instances)
-        .set({ lastReceivedDataAt: influxDbInstance.lastUpdate })
+        .set({ lastReceivedDataAt: new Date(influxDbInstance.lastUpdate) })
         .where(eq(instances.id, id));
     }
 
@@ -92,7 +97,7 @@ export async function enrichInstancesMetadata() {
     if (influxDbInstance.lastUpdate && !sqliteInstance.firstReceivedDataAt) {
       await setFirstReceivedDataAt(id);
       console.log(
-        `[SQLITE] set first received data at for instance "${id}" to "${influxDbInstance.lastUpdate.toISOString()}"`,
+        `[SQLITE] set first received data at for instance "${id}" to "${new Date(influxDbInstance.lastUpdate).toISOString()}"`,
       );
     }
   }

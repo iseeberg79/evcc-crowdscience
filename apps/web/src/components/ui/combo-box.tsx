@@ -68,7 +68,6 @@ export function Combobox<TValue extends string>({
                   key={option.value}
                   value={option.value}
                   onSelect={(currentValue) => {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     onChange?.(currentValue as TValue);
                     setOpen(false);
                   }}

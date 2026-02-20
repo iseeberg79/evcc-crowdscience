@@ -1,24 +1,24 @@
 import { redirect } from "@tanstack/react-router";
 
-import { possibleChartTopicsConfig } from "~/lib/time-series-config";
+import { possibleMeasurementsConfig } from "~/lib/time-series-config";
 
-export function ensureDefaultChartTopicField(
-  chartTopic: string,
-  chartTopicField?: string,
+export function ensureDefaultMeasurementField(
+  measurement: string,
+  field?: string,
 ) {
-  const topicConfig = possibleChartTopicsConfig[chartTopic];
-  if (!topicConfig) return;
+  const measurementConfig = possibleMeasurementsConfig[measurement];
+  if (!measurementConfig) return;
 
-  const availableFields = Object.keys(topicConfig.fields);
+  const availableFields = Object.keys(measurementConfig.fields);
   if (availableFields.length === 0) return;
 
   // If no field is selected or the selected field doesn't exist, redirect to default
-  if (!chartTopicField || !availableFields.includes(chartTopicField)) {
+  if (!field || !availableFields.includes(field)) {
     throw redirect({
       to: ".",
       search: (prev) => ({
         ...prev,
-        chartTopicField: availableFields[0],
+        field: availableFields[0],
       }),
     });
   }

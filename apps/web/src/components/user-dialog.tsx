@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { LoadingButton } from "~/components/ui/button";
@@ -40,54 +40,56 @@ export type DialogUser = EditableUser;
 const userDialogBaseSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  email: z.email(),
+  email: z.string().email(),
   isAdmin: z.boolean(),
+  showPasswordInput: z.boolean().optional(),
 });
 
-const userDialogCreateSchema = userDialogBaseSchema.extend({
-  password: z.string().min(3),
-  mode: z.literal("create").default("create"),
-});
+const userDialogSchema = z.discriminatedUnion("mode", [
+  userDialogBaseSchema.extend({
+    mode: z.literal("create"),
+    password: z.string().min(3),
+  }),
+  userDialogBaseSchema.extend({
+    mode: z.literal("edit"),
+    id: z.string(),
+    password: z.string().nullable().optional(),
+    showPasswordInput: z.boolean(),
+  }),
+]);
 
-const userDialogUpdateSchema = userDialogCreateSchema.extend({
-  id: z.string(),
-  password: z.string().nullable().default(null),
-  showPasswordInput: z.boolean().default(false),
-  mode: z.literal("edit").default("edit"),
-});
+type UserDialogFormValues = z.infer<typeof userDialogSchema>;
 
-type UserDialogFormProps = {
-  user?: DialogUser;
-  action: "edit" | "create";
-} & {
-  onAfterSuccessfulSubmit?: (
-    values: z.infer<
-      typeof userDialogCreateSchema | typeof userDialogUpdateSchema
-    >,
-  ) => void;
-};
+type UserDialogFormProps =
+  | {
+      user?: never;
+      action: "create";
+      onAfterSuccessfulSubmit?: (values: UserDialogFormValues) => void;
+    }
+  | {
+      user: DialogUser;
+      action: "edit";
+      onAfterSuccessfulSubmit?: (values: UserDialogFormValues) => void;
+    };
 
 function UserDialogForm({
   action,
   user,
   onAfterSuccessfulSubmit,
 }: UserDialogFormProps) {
-  const schema =
-    action === "edit" ? userDialogUpdateSchema : userDialogCreateSchema;
-
   const queryClient = useQueryClient();
 
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema) as Resolver<z.infer<typeof schema>>,
+  const form = useForm<UserDialogFormValues>({
+    resolver: zodResolver(userDialogSchema),
     defaultValues: {
+      password: "",
+      showPasswordInput: false,
       ...(user ?? {
         email: "",
         firstName: "",
         lastName: "",
         isAdmin: false,
-        id: null,
-        password: "",
-        showPasswordInput: true,
+        id: undefined,
       }),
       mode: action,
     },
@@ -96,18 +98,32 @@ function UserDialogForm({
   const updateMutation = useMutation(orpc.users.update.mutationOptions());
   const createMutation = useMutation(orpc.users.create.mutationOptions());
 
-  async function onSubmit(values: z.infer<typeof schema>) {
-    if (values.mode === "edit") {
-      await updateMutation.mutateAsync(values);
-    } else {
-      await createMutation.mutateAsync(values);
+  async function onSubmit(values: UserDialogFormValues) {
+    try {
+      if (values.mode === "edit") {
+        await updateMutation.mutateAsync({
+          ...values,
+          password: values.password ?? null,
+        });
+      } else {
+        await createMutation.mutateAsync(values);
+      }
+      form.reset();
+      onAfterSuccessfulSubmit?.(values);
+      void queryClient.invalidateQueries({
+        queryKey: orpc.users.getMultiple.queryKey({ input: {} }),
+      });
+    } catch (e) {
+      toast({
+        title: "Error",
+        description: (e as Error).message,
+        variant: "destructive",
+      });
     }
-    form.reset();
-    onAfterSuccessfulSubmit?.(values);
-    void queryClient.invalidateQueries({
-      queryKey: orpc.users.getMultiple.queryKey(),
-    });
   }
+
+  const mode = form.watch("mode");
+  const showPasswordInput = form.watch("showPasswordInput");
 
   return (
     <Form {...form}>
@@ -178,35 +194,38 @@ function UserDialogForm({
           <FormLabel
             className={cn(form.formState.errors.password && "text-destructive")}
           >
-            {action === "edit" ? "Change" : "Set"} Password
+            {mode === "edit" ? "Change" : "Set"} Password
           </FormLabel>
           <FormControl>
             <div className="flex flex-row flex-wrap items-center gap-x-4 gap-y-2">
-              <FormField
-                control={form.control}
-                name="showPasswordInput"
-                render={({ field }) => (
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={(e) => {
-                      field.onChange(e);
-                      if (!e) {
-                        form.setValue("password", "");
-                      }
-                    }}
-                  />
-                )}
-              />
+              {mode === "edit" && (
+                <FormField
+                  control={form.control}
+                  name="showPasswordInput"
+                  render={({ field }) => (
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={(e) => {
+                        field.onChange(e);
+                        if (!e) {
+                          form.setValue("password", null); // Set to null instead of empty string
+                        }
+                      }}
+                    />
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name="password"
                 render={({ field }) => {
+                  const isDisabled = mode === "edit" && !showPasswordInput;
                   return (
                     <>
                       <PasswordInput
                         {...field}
                         value={field.value ?? ""}
-                        disabled={!form.watch("showPasswordInput")}
+                        disabled={isDisabled}
                         autoComplete="new-password"
                       />
                       <FormMessage className="w-full shrink-0" />
@@ -255,6 +274,8 @@ export function UserDialog() {
     });
   }, [navigate]);
 
+  const formKey = `${action}-${JSON.stringify(user)}`;
+
   return (
     <Dialog
       open={!!action}
@@ -273,9 +294,26 @@ export function UserDialog() {
         </DialogHeader>
         {action === "edit" && !user ? (
           <div>User not found</div>
-        ) : (
+        ) : action === "create" ? (
           <UserDialogForm
-            action={action!}
+            key={formKey}
+            action="create"
+            onAfterSuccessfulSubmit={(values) => {
+              void queryClient.invalidateQueries({
+                queryKey: ["user"],
+              });
+              void navigateToUsers();
+
+              toast({
+                title: "User created",
+                description: `User ${values.firstName} ${values.lastName} has been created`,
+              });
+            }}
+          />
+        ) : user ? (
+          <UserDialogForm
+            key={formKey}
+            action="edit"
             user={user}
             onAfterSuccessfulSubmit={(values) => {
               void queryClient.invalidateQueries({
@@ -283,14 +321,13 @@ export function UserDialog() {
               });
               void navigateToUsers();
 
-              const action = values.mode === "edit" ? "updated" : "created";
               toast({
-                title: `User ${action}`,
-                description: `User ${values.firstName} ${values.lastName} has been ${action}`,
+                title: "User updated",
+                description: `User ${values.firstName} ${values.lastName} has been updated`,
               });
             }}
           />
-        )}
+        ) : null}
       </DialogContent>
     </Dialog>
   );

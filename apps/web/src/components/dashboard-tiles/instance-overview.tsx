@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
+import { CopyableText } from "~/components/copyable-text";
 import { formatUnit } from "~/lib/utils";
 import { orpc } from "~/orpc/client";
 import { Card, CardContent } from "../ui/card";
@@ -14,9 +15,9 @@ export function InstanceOverview({
   const { data: statistics } = useSuspenseQuery(
     orpc.sites.getStatistics.queryOptions({ input: { instanceId } }),
   );
-  const { data: instance } = useSuspenseQuery(
-    orpc.instances.getById.queryOptions({ input: { id: instanceId } }),
-  );
+  // const { data: instance } = useSuspenseQuery(
+  //   orpc.instances.getById.queryOptions({ input: { id: instanceId } }),
+  // );
 
   const { data: loadingSessions } = useSuspenseQuery(
     orpc.loadingSessions.getExtractedSessions.queryOptions({
@@ -24,36 +25,40 @@ export function InstanceOverview({
     }),
   );
 
-  const { data: batteryMetaData } = useSuspenseQuery(
-    orpc.batteries.getMetaData.queryOptions({ input: { instanceId } }),
-  );
+  // const { data: batteryMetaData } = useSuspenseQuery(
+  //   orpc.batteries.getMetaData.queryOptions({ input: { instanceId } }),
+  // );
 
   return (
     <Card className={className}>
       <CardContent className="p-4">
         <div className="grid grid-cols-2 gap-x-12 gap-y-8 md:grid-cols-5">
+          <div className="col-span-2 flex flex-col gap-2 md:col-span-5">
+            <span className="text-sm text-muted-foreground">Instance ID</span>
+            <CopyableText text={instanceId} className="w-fit" />
+          </div>
           <InstanceOverviewInfo
             title="Sessions"
             subtitle="(total)"
             value={loadingSessions?.length.toString()}
           />
-          {statistics?.["30d"]?.chargedKWh?.value ? (
+          {statistics.values?.["30d"]?.chargedKWh?.value ? (
             <InstanceOverviewInfo
               title="Charging Usage"
               subtitle="(30d)"
               value={formatUnit(
-                statistics?.["30d"]?.chargedKWh?.value / 30,
+                statistics.values["30d"]?.chargedKWh?.value,
                 "kWh / d",
                 1,
               )}
             />
           ) : null}
-          {statistics?.["30d"]?.solarPercentage?.value ? (
+          {statistics.values["30d"]?.solarPercentage?.value ? (
             <InstanceOverviewInfo
               title="Solar"
               subtitle="(30d)"
               value={formatUnit(
-                statistics?.["30d"]?.solarPercentage?.value,
+                statistics.values["30d"]?.solarPercentage?.value,
                 "%",
                 1,
               )}
@@ -71,6 +76,7 @@ export function InstanceOverview({
             subtitle="(total)"
             value={formatUnit(batteryMetaData.data.totalCapacity, "kWh", 1)}
           /> */}
+
         </div>
       </CardContent>
     </Card>
@@ -93,7 +99,7 @@ function InstanceOverviewInfo({
         {subtitle && (
           <>
             {" "}
-            <span className="text-muted-foreground text-xs">{subtitle}</span>
+            <span className="text-xs text-muted-foreground">{subtitle}</span>
           </>
         )}
       </span>

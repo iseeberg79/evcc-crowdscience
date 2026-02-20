@@ -1,4 +1,4 @@
-export type ChartTopicConfig = Record<
+export type MeasurementConfig = Record<
   string,
   {
     label: string;
@@ -12,24 +12,7 @@ export type ChartTopicConfig = Record<
   }
 >;
 
-export const possibleChartTopicsConfig: ChartTopicConfig = {
-  pv: {
-    label: "PV",
-    fields: {
-      power: {
-        label: "Power",
-        unit: "W",
-      },
-      energy: {
-        label: "Energy",
-        unit: "Wh",
-      },
-      excessDCPower: {
-        label: "Excess DC Power",
-        unit: "W",
-      },
-    },
-  },
+export const possibleMeasurementsConfig: MeasurementConfig = {
   battery: {
     label: "Battery",
     fields: {
@@ -47,8 +30,21 @@ export const possibleChartTopicsConfig: ChartTopicConfig = {
       },
     },
   },
+  grid: {
+    label: "Grid",
+    fields: {
+      power: {
+        label: "Power",
+        unit: "W",
+      },
+      energy: {
+        label: "Energy",
+        unit: "Wh",
+      },
+    },
+  },
   loadpoints: {
-    label: "Load Point",
+    label: "Load Points",
     fields: {
       chargePower: {
         label: "Charge Power",
@@ -63,5 +59,30 @@ export const possibleChartTopicsConfig: ChartTopicConfig = {
         unit: "seconds",
       },
     },
+  },
+  pv: {
+    label: "PV",
+    fields: {
+      power: {
+        label: "Power",
+        unit: "W",
+      },
+      energy: {
+        label: "Energy",
+        unit: "Wh",
+      },
+      excessDCPower: {
+        label: "Excess DC Power",
+        unit: "W",
+      },
+    },
+  },
+  site: {
+    label: "Site",
+    fields: {},
+  },
+  vehicles: {
+    label: "Vehicles",
+    fields: {},
   },
 };

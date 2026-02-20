@@ -1,109 +1,159 @@
-import { os } from "@orpc/server";
-import { and, eq, inArray } from "drizzle-orm";
-import * as z from "zod";
+
+import { desc, eq, inArray } from "drizzle-orm";
+import { z } from "zod";
 
 import { sqliteDb } from "~/db/client";
 import {
   csvImportLoadingSessions,
   extractedLoadingSessions,
 } from "~/db/schema";
-import {
-  instanceIdsFilterSchema,
-  timeRangeInputSchema,
-} from "~/lib/globalSchemas";
-import { parseLoadingSessionCsv } from "~/lib/import-export/parseLoadingSessionCsv";
-import { authedProcedure } from "../middleware";
-import { extractSessionRanges } from "./extractor";
+import { instanceIdsFilterSchema } from "~/lib/globalSchemas";
+import { authedProcedure, publicProcedure } from "../middleware";
+import { extractSessionDetails } from "./extractDetails";
+import { extractSessionRanges } from "./extractRanges";
+import { importSessions } from "./import";
+import { csvImportLoadingSessionSchema, extractedSessionSchema } from "./types";
 
 export const loadingSessionsRouter = {
-  getExtractedSessions: os
+  getExtractedSessions: publicProcedure
+    .route({
+      tags: ["Loading Sessions"],
+      summary: "Get extracted sessions",
+      description:
+        "Retrieves automatically extracted loading sessions from InfluxDB time series data",
+    })
     .input(instanceIdsFilterSchema)
-    .handler(async ({ input }) => {
-      return sqliteDb
-        .select()
-        .from(extractedLoadingSessions)
-        .where(
-          and(
-            input.instanceIds?.length
-              ? inArray(extractedLoadingSessions.instanceId, input.instanceIds)
-              : undefined,
-          ),
-        );
+    .output(
+      z.array(extractedSessionSchema).meta({
+        examples: [
+          [
+            {
+              id: "sess_1",
+              sessionRangeHash: "abc123hash",
+              instanceId: "018f3d4a-5b6c-7d8e-af01-23456789abcd",
+              startTime: 1704110400000,
+              endTime: 1704117600000,
+              duration: 7200,
+              componentId: "lp-1",
+            },
+          ],
+        ],
+      }),
+    )
+    .handler(({ input }) => {
+      return sqliteDb.query.extractedLoadingSessions.findMany({
+        where: input.instanceIds?.length
+          ? inArray(extractedLoadingSessions.instanceId, input.instanceIds)
+          : undefined,
+        orderBy: [desc(extractedLoadingSessions.startTime)],
+      });
     }),
-  getImportedSessions: os
+  getSessionByHash: publicProcedure
+    .route({
+      tags: ["Loading Sessions"],
+      summary: "Get session by hash",
+      description:
+        "Retrieves a specific loading session from the db by its unique session range hash",
+    })
+    .input(
+      z
+        .object({
+          sessionRangeHash: z
+            .string()
+            .describe("Unique hash identifying a session time range"),
+        })
+        .meta({ examples: [{ sessionRangeHash: "abc123hash" }] }),
+    )
+    .output(extractedSessionSchema)
+    .handler(async ({ input, errors }) => {
+      const session = await sqliteDb.query.extractedLoadingSessions.findFirst({
+        where: eq(
+          extractedLoadingSessions.sessionRangeHash,
+          input.sessionRangeHash,
+        ),
+      });
+      if (!session) {
+        throw errors.NOT_FOUND({ message: "Session not found" });
+      }
+      return session;
+    }),
+  getImportedSessions: publicProcedure
+    .route({
+      tags: ["Loading Sessions"],
+      summary: "Get imported sessions",
+      description:
+        "Retrieves loading sessions that were manually imported from CSV files",
+    })
     .input(instanceIdsFilterSchema)
+    .output(
+      z.array(csvImportLoadingSessionSchema).meta({
+        examples: [
+          [
+            {
+              id: "imp_1",
+              instanceId: "018f3d4a-5b6c-7d8e-af01-23456789abcd",
+              startTime: 1704110400000,
+              endTime: 1704117600000,
+              energy: 15.0,
+            },
+          ],
+        ],
+      }),
+    )
+    .handler(({ input }) => {
+      return sqliteDb.query.csvImportLoadingSessions.findMany({
+        where: input.instanceIds?.length
+          ? inArray(csvImportLoadingSessions.instanceId, input.instanceIds)
+          : undefined,
+      });
+    }),
+  deleteImportedSessions: authedProcedure
+    .route({
+      tags: ["Loading Sessions"],
+      summary: "Delete imported sessions",
+      description:
+        "Deletes CSV-imported loading sessions for specified instances",
+    })
+    .input(instanceIdsFilterSchema)
+    .output(
+      z
+        .void()
+        .describe("No return value - deletion completed successfully")
+        .meta({ examples: [undefined] }),
+    )
     .handler(async ({ input }) => {
       return sqliteDb
-        .select()
-        .from(csvImportLoadingSessions)
+        .delete(csvImportLoadingSessions)
         .where(
           input.instanceIds?.length
             ? inArray(csvImportLoadingSessions.instanceId, input.instanceIds)
             : undefined,
         );
     }),
-  importSessions: authedProcedure
-    .input(
-      z.object({
-        csvFile: z.instanceof(File),
-        instanceId: z.string(),
-      }),
+  deleteExtractedSessions: authedProcedure
+    .route({
+      tags: ["Loading Sessions"],
+      summary: "Delete extracted sessions",
+      description:
+        "Deletes automatically extracted loading sessions for specified instances",
+    })
+    .input(instanceIdsFilterSchema)
+    .output(
+      z
+        .void()
+        .describe("No return value - deletion completed successfully")
+        .meta({ examples: [undefined] }),
     )
     .handler(async ({ input }) => {
-      const instanceId = input.instanceId;
-
-      // Parse CSV file
-      const csvText = await input.csvFile.text();
-      const rows = await parseLoadingSessionCsv(csvText);
-
-      // Check existing records for this instance
-      const existingData =
-        await sqliteDb.query.csvImportLoadingSessions.findMany({
-          where: eq(csvImportLoadingSessions.instanceId, instanceId),
-        });
-
-      const existingHashes = new Set(existingData.map((row) => row.lineHash));
-
-      // Prepare rows with metadata and deduplication
-      const rowsWithMetadata = rows
-        .map((row) => ({
-          ...row,
-          startTime: new Date(row.startTime),
-          endTime: new Date(row.endTime),
-          instanceId,
-          lineHash: String(Bun.hash(JSON.stringify({ row, instanceId }))),
-        }))
-        .filter((row) => !existingHashes.has(row.lineHash));
-
-      // Insert new records
-      if (rowsWithMetadata.length > 0) {
-        await sqliteDb
-          .insert(csvImportLoadingSessions)
-          .values(rowsWithMetadata);
-      }
-
-      // Return all imported sessions for this instance (sorted by startTime)
-      const allImported = await sqliteDb
-        .select()
-        .from(csvImportLoadingSessions)
-        .where(eq(csvImportLoadingSessions.instanceId, instanceId))
-        .orderBy(csvImportLoadingSessions.startTime);
-
-      return allImported;
+      return sqliteDb
+        .delete(extractedLoadingSessions)
+        .where(
+          input.instanceIds?.length
+            ? inArray(extractedLoadingSessions.instanceId, input.instanceIds)
+            : undefined,
+        );
     }),
-  extractSessions: authedProcedure
-    .input(
-      z.object({
-        instanceId: z.string(),
-        timeRange: timeRangeInputSchema,
-      }),
-    )
-    .handler(async ({ input }) => {
-      const ranges = await extractSessionRanges({
-        instanceId: input.instanceId,
-        timeRange: input.timeRange,
-      });
-
-      return ranges;
-    }),
+  importSessions,
+  extractSessionRanges,
+  extractSessionDetails,
 };

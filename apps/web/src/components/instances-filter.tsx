@@ -74,15 +74,20 @@ export function InstancesFilter({ className }: { className?: string }) {
       type="single"
       collapsible
       className={className}
-      value={filterExpanded ? "instances-filter" : undefined}
+      // @ts-expect-error - value can be null
+      value={filterExpanded ? "instances-filter" : null}
     >
       <AccordionItem value="instances-filter" className="flex flex-col">
         <Button variant="outline" className={"w-full px-4"} asChild>
-          <Link to={"."} search={{ filterExpanded: !filterExpanded }} replace>
+          <Link
+            to={"."}
+            search={(prev) => ({ ...prev, filterExpanded: !filterExpanded })}
+            replace
+          >
             <FilterIcon className="size-4" />
             Filter Instances
             {filter && (
-              <span className="text-primary text-xs">
+              <span className="text-xs text-primary">
                 ({filteredInstances?.length}/{instances?.length})
               </span>
             )}

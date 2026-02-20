@@ -56,13 +56,15 @@ export function StateTimelineChart({
           markArea: {
             tooltip: { show: false },
             emphasis: { disabled: true },
-            data: gaps?.map((gap) => [
-              {
-                xAxis: gap.start.getTime(),
-                itemStyle: { color: "hsl(18 60% 57%)" },
-              },
-              { xAxis: gap.end.getTime() },
-            ]),
+            data: gaps?.map((gap) => {
+              return [
+                {
+                  xAxis: gap.start,
+                  itemStyle: { color: "hsl(18 60% 57%)" },
+                },
+                { xAxis: gap.end },
+              ];
+            }),
           },
         },
       ],

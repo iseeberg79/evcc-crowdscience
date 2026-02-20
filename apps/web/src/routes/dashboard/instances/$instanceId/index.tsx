@@ -1,46 +1,46 @@
+import { useMemo } from "react";
 import {
   useMutation,
   useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { createFileRoute, type MakeRouteMatch } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
+import { ChargingHourHistogram } from "~/components/charts/charging-hour-histogram";
 import { StateTimelineChart } from "~/components/charts/state-timeline-chart";
 import { InstanceTimeSeriesEcharts } from "~/components/charts/time-series-chart";
 import { MetadataGraph } from "~/components/dashboard-graph";
 import { BatteryInfo } from "~/components/dashboard-tiles/battery-info";
-import { ChargingHourHistogram } from "~/components/dashboard-tiles/charging-hour-histogram";
 import { ExtractedSessions } from "~/components/dashboard-tiles/extracted-sessions-overview";
 import { ImportedSessions } from "~/components/dashboard-tiles/imported-sessions-overview";
 import { InstanceOverview } from "~/components/dashboard-tiles/instance-overview";
-import { StartSocHistogram } from "~/components/dashboard-tiles/start-soc-histogram";
 import { LoadingButton } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { useTimeSeriesSettings } from "~/hooks/use-timeseries-settings";
 import { singleInstanceRouteSearchSchema } from "~/lib/globalSchemas";
 import { formatCount, formatUnit } from "~/lib/utils";
-import { ensureDefaultChartTopicField } from "~/middleware/searchValidationHelpers";
+import { ensureDefaultMeasurementField } from "~/middleware/searchValidationHelpers";
 import { orpc } from "~/orpc/client";
 
-export const Route = createFileRoute("/dashboard/instances/$instanceId")({
+export const Route = createFileRoute("/dashboard/instances/$instanceId/")({
   component: RouteComponent,
   validateSearch: singleInstanceRouteSearchSchema,
-  beforeLoad: async ({ params, context, search }) => {
-    // load instance data
+  beforeLoad: async ({ context, search }) => {
     const instance = await context.queryClient.ensureQueryData(
       orpc.instances.getById.queryOptions({
-        input: { id: params.instanceId },
+        input: { id: context.instance.id },
       }),
     );
+    ensureDefaultMeasurementField(search.measurement, search.field);
 
-    ensureDefaultChartTopicField(search.chartTopic, search.chartTopicField);
-
-    return { instance };
+    return {
+      instance,
+      routeTitle: false,
+    };
   },
   loader: async ({ context }) => {
-    const { instance } = context;
-    const instanceId = instance.id;
+    const instanceId = context.instance.id;
     const queryOptions = [
       orpc.loadpoints.getMetaData.queryOptions({ input: { instanceId } }),
       orpc.pv.getMetaData.queryOptions({ input: { instanceId } }),
@@ -66,19 +66,27 @@ export const Route = createFileRoute("/dashboard/instances/$instanceId")({
       ),
     );
   },
-  staticData: {
-    routeTitle: (r: MakeRouteMatch<typeof Route>) => {
-      return `${r.context.instance?.publicName ?? "Instance not found"}`;
-    },
-  },
 });
 
 function RouteComponent() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const { instanceId } = Route.useParams();
-  const queryClient = useQueryClient();
   const { timeRange } = useTimeSeriesSettings();
+  const queryClient = useQueryClient();
+
+  const activeSeries = useMemo(() => {
+    if (search.series && search.series.length > 0) {
+      return search.series;
+    }
+    return [
+      {
+        id: "default",
+        measurement: search.measurement,
+        field: search.field,
+      },
+    ];
+  }, [search.series, search.measurement, search.field]);
 
   const instance = useSuspenseQuery(
     orpc.instances.getById.queryOptions({ input: { id: instanceId } }),
@@ -136,6 +144,12 @@ function RouteComponent() {
     }),
   );
 
+  const extractedSessions = useSuspenseQuery(
+    orpc.loadingSessions.getExtractedSessions.queryOptions({
+      input: { instanceIds: [instanceId] },
+    }),
+  );
+
   return (
     <div className="grid w-full grid-cols-2 gap-2 md:grid-cols-4 md:gap-4 lg:grid-cols-8 xl:grid-cols-12">
       <StateTimelineChart
@@ -150,22 +164,20 @@ function RouteComponent() {
       <InstanceTimeSeriesEcharts
         className="col-span-2 md:col-span-4 lg:col-span-8 lg:row-span-4"
         instanceId={instanceId}
-        chartTopic={search.chartTopic}
-        chartTopicField={search.chartTopicField}
-        handleChartTopicChange={(chartTopic, chartTopicField) =>
+        series={activeSeries}
+        onSeriesChange={(series) =>
           navigate({
             replace: true,
-            search: (prev) => ({ ...prev, chartTopic, chartTopicField }),
+            search: (prev) => ({ ...prev, series }),
           })
         }
+        extractedSessions={extractedSessions.data}
         importedSessions={importedSessions.data}
         gaps={gaps.data}
-      />
-
-      <StartSocHistogram
-        title="Start SOC Distribution (last 30 days)"
-        className="col-span-2 lg:col-span-4 lg:row-span-2"
-        instanceIds={[instanceId]}
+        pvMetaData={pvMetaData.data}
+        loadPointMetaData={loadPointMetaData.data}
+        batteryMetaData={batteryMetaData.data}
+        vehicleMetaData={vehicleMetaData.data}
       />
       <ChargingHourHistogram
         instanceIds={[instanceId]}
@@ -228,7 +240,7 @@ function RouteComponent() {
         mainContent={
           <div>
             {formatUnit(
-              statistics.data.values["30d"]?.chargedKWh?.value as number,
+              statistics.data.values["30d"]?.chargedKWh?.value,
               "kWh",
             )}{" "}
             Usage{" "}

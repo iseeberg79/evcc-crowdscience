@@ -6,10 +6,11 @@ import { instances } from "~/db/schema";
 import { env } from "~/env";
 import { buildFluxQuery, queryInflux } from "~/lib/influx-query";
 import { pick } from "~/lib/typeHelpers";
+import { instancesOverviewInputSchema } from "~/schema/instances";
 import { authedProcedure } from "../middleware";
 
 export type InfluxDbInstance = {
-  lastUpdate?: Date;
+  lastUpdate?: number;
   pvMaxPowerKw?: number;
   loadpointMaxPowerKw?: number;
 };
@@ -24,7 +25,7 @@ export async function getActiveInfluxDbInstances({
   const rowSchema = z.union([
     z.object({
       result: z.literal("last-update"),
-      _value: z.string().or(z.number()),
+      _value: z.coerce.number(),
       instance: z.string(),
       _measurement: z.literal("updated"),
     }),
@@ -90,7 +91,7 @@ export async function getActiveInfluxDbInstances({
 
       switch (data.result) {
         case "last-update":
-          instance.lastUpdate = new Date(+data._value * 1000);
+          instance.lastUpdate = data._value * 1000;
           break;
         case "pv-capacity":
           instance.pvMaxPowerKw = data._value;
@@ -112,21 +113,66 @@ export async function getActiveInfluxDbInstances({
 export type InstanceOverview = {
   id: string;
   publicName: string | null;
-  lastReceivedDataAt: Date | null;
-  firstReceivedDataAt: Date | null;
+  lastReceivedDataAt: number | null;
+  firstReceivedDataAt: number | null;
   pvMaxPowerKw?: number;
   loadpointMaxPowerKw?: number;
 };
 export type InstancesOverview = InstanceOverview[];
 
 export const getInstancesOverview = authedProcedure
-  .input(
+  .route({
+    tags: ["Instances"],
+    summary: "Get instances overview",
+    description:
+      "Retrieves a comprehensive overview of all instances including data from both SQLite and InfluxDB, with filtering options",
+  })
+  .input(instancesOverviewInputSchema)
+  .output(
     z
-      .object({
-        idFilter: z.string().optional(),
-        showIgnored: z.boolean().optional().default(false),
-      })
-      .optional(),
+      .array(
+        z.object({
+          id: z.string().describe("Unique instance identifier (UUIDv7)"),
+          publicName: z
+            .string()
+            .nullable()
+            .describe("Human-readable public name"),
+          lastReceivedDataAt: z.coerce
+            .number()
+            .nullable()
+            .describe("Timestamp of last received data in milliseconds"),
+          firstReceivedDataAt: z.coerce
+            .number()
+            .nullable()
+            .describe("Timestamp of first received data in milliseconds"),
+          lastExtractedDataAt: z.coerce
+            .number()
+            .nullable()
+            .describe("Timestamp of last data extraction in milliseconds"),
+          pvMaxPowerKw: z
+            .number()
+            .optional()
+            .describe("Maximum PV power in kW found in history"),
+          loadpointMaxPowerKw: z
+            .number()
+            .optional()
+            .describe("Maximum loadpoint power in kW found in history"),
+        }),
+      )
+      .meta({
+        examples: [
+          [
+            {
+              id: "018f3d4a-5b6c-7d8e-af01-23456789abcd",
+              publicName: "shiny-mountain-123",
+              lastReceivedDataAt: 1704110400000,
+              firstReceivedDataAt: 1704024000000,
+              pvMaxPowerKw: 5.5,
+              loadpointMaxPowerKw: 11.0,
+            },
+          ],
+        ],
+      }),
   )
   .handler(async ({ input }) => {
     const persistedInstances = await sqliteDb.query.instances.findMany({
@@ -149,6 +195,7 @@ export const getInstancesOverview = authedProcedure
             "publicName",
             "lastReceivedDataAt",
             "firstReceivedDataAt",
+            "lastExtractedDataAt",
           ]),
           ...influxDbInstances.get(instance.id),
         };

@@ -8,12 +8,41 @@ import { authedProcedure } from "../middleware";
 
 export const chargingStatsRouter = {
   getChargingHourHistogram: authedProcedure
+    .route({
+      tags: ["Analytics"],
+      summary: "Get charging hour histogram",
+      description:
+        "Retrieves a histogram of charging activity by hour of day for the past 30 days, showing when charging typically occurs",
+    })
     .input(instanceIdsFilterSchema)
+    .output(
+      z
+        .record(
+          z.string().describe("Instance ID"),
+          z
+            .array(z.number())
+            .length(24)
+            .describe("Array of counts per hour (0-23)"),
+        )
+        .describe(
+          "Histogram data organized by instance ID with array of counts per hour (0-23)",
+        )
+        .meta({
+          examples: [
+            {
+              "018f3d4a-5b6c-7d8e-af01-23456789abcd": [
+                0, 0, 0, 0, 0, 0, 2, 5, 10, 8, 4, 2, 1, 0, 0, 0, 3, 7, 12, 15, 8,
+                4, 1, 0,
+              ],
+            },
+          ],
+        }),
+    )
     .handler(async ({ input }) => {
       const res: Record<string, number[]> = {};
       const rowSchema = z.object({
         _value: z.number(),
-        le: z.number(),
+        le: z.number().catch(0),
         instance: z.string(),
       });
 
@@ -28,7 +57,7 @@ export const chargingStatsRouter = {
 
       from(bucket: {{bucket}})
         |> range(start: -30d)
-        |> filter(fn: (r) => r["_measurement"] == "loadpoints" and r["_field"] == "chargeCurrent")
+        |> filter(fn: (r) => r["_measurement"] == "loadpoints" and r["_field"] == "chargeCurrents" and not exists r.phase)
         |> window(every: 1h, createEmpty: false)
         |> max()
         ${input.instanceIds?.length ? `|> filter(fn: (r) => contains(value: r["instance"], set: instanceIds))` : ""}
@@ -38,7 +67,7 @@ export const chargingStatsRouter = {
             r with
             floatHour: float(v: date.hour(t: r._time))
           }))
-        |> histogram(bins: linearBins(count: 24, width: 1.0, start: 0.0), column: "floatHour")
+        |> histogram(bins: linearBins(count: 24, width: 1.0, start: 0.0, infinity: false), column: "floatHour")
         |> group(columns: ["le"])
     `,
         {

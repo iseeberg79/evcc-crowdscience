@@ -3,9 +3,9 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { sum } from "simple-statistics";
 
+import { ChargeSocHistogram } from "~/components/charts/charge-soc-histogram";
+import { ChargingHourHistogram } from "~/components/charts/charging-hour-histogram";
 import { DashboardGraph } from "~/components/dashboard-graph";
-import { ChargingHourHistogram } from "~/components/dashboard-tiles/charging-hour-histogram";
-import { StartSocHistogram } from "~/components/dashboard-tiles/start-soc-histogram";
 import { InstancesFilter } from "~/components/instances-filter";
 import {
   filterInstances,
@@ -17,6 +17,7 @@ import { orpc } from "~/orpc/client";
 export const Route = createFileRoute("/dashboard/")({
   component: RouteComponent,
   loaderDeps: ({ search }) => ({ search }),
+  beforeLoad: () => ({ routeTitle: false }),
   loader: async ({ context, deps }) => {
     const instances = await context.queryClient.fetchQuery(
       orpc.instances.getOverview.queryOptions({ input: {} }),
@@ -36,25 +37,23 @@ export const Route = createFileRoute("/dashboard/")({
         }),
       ),
       context.queryClient.ensureQueryData(
-        orpc.batteries.getData.queryOptions(),
+        orpc.batteries.getData.queryOptions({ input: { instanceIds } }),
       ),
     ];
     await Promise.allSettled(promises);
-  },
-  staticData: {
-    routeTitle: "Dashboard",
   },
 });
 
 function RouteComponent() {
   const { filteredInstances } = useInstancesFilter();
+  const instanceIds = filteredInstances.map((instance) => instance.id);
 
   const { data: batteryData } = useSuspenseQuery(
-    orpc.batteries.getData.queryOptions(),
+    orpc.batteries.getData.queryOptions({ input: { instanceIds } }),
   );
   const { data: loadingSessions } = useSuspenseQuery(
     orpc.loadingSessions.getExtractedSessions.queryOptions({
-      input: { instanceIds: filteredInstances.map((instance) => instance.id) },
+      input: { instanceIds },
     }),
   );
 
@@ -69,7 +68,7 @@ function RouteComponent() {
       capacity,
       connectedBatteries: count,
     };
-  }, [batteryData, filteredInstances]);
+  }, [batteryData]);
 
   return (
     <div className="grid gap-2 md:grid-cols-4 md:gap-4 lg:grid-cols-8 xl:grid-cols-12">
@@ -98,7 +97,7 @@ function RouteComponent() {
         <div className="text-2xl font-bold">
           {totalBatteryData.connectedBatteries}
         </div>
-        <p className="text-muted-foreground inline text-xs">
+        <p className="inline text-xs text-muted-foreground">
           ~
           {formatUnit(
             totalBatteryData.capacity / totalBatteryData.connectedBatteries,
@@ -108,15 +107,13 @@ function RouteComponent() {
           &nbsp;per battery
         </p>
       </DashboardGraph>
+      <ChargeSocHistogram
+        className="md:col-span-4 lg:row-span-2 xl:col-span-6"
+        extractedSessions={loadingSessions}
+      />
       <ChargingHourHistogram
         className="md:col-span-4 lg:col-span-4 xl:col-span-6"
-        instanceIds={filteredInstances.map((instance) => instance.id)}
-        heightConfig={{ min: 200, max: 400 }}
-      />
-      <StartSocHistogram
-        title="Start SOC Distribution (last 30 days)"
-        className="md:col-span-4 lg:col-span-4 xl:col-span-6"
-        instanceIds={filteredInstances.map((instance) => instance.id)}
+        instanceIds={instanceIds}
         heightConfig={{ min: 200, max: 400 }}
       />
     </div>

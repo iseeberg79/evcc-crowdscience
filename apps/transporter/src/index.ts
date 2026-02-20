@@ -1,4 +1,3 @@
-import destr from "destr";
 import { createStorage, type StorageValue } from "unstorage";
 import memoryDriver from "unstorage/drivers/memory";
 
@@ -8,14 +7,14 @@ import { parseEvccTopic } from "~/lib/evcc-topic-parser";
 import { filterTopic } from "./lib/filtering";
 import { isUuidV7 } from "./lib/uuid";
 
-const TOO_OLD_MILLISECONDS = 1000 * 60 * 30;
+const TOO_OLD_MILLISECONDS = 1000 * 60 * 10;
 const FILTER_INSTANCE_IDS = Bun.env.FILTER_INSTANCE_IDS !== "false";
 
 const invalidInstanceIds = new Set<string>();
 
 const storage = createStorage();
 storage.mount("cache", memoryDriver());
-storage.mount("write", memoryDriver());
+storage.mount("collect", memoryDriver());
 
 mqttClient.on("connect", () => {
   console.log("Connected to MQTT broker");
@@ -43,33 +42,11 @@ mqttClient.on("message", async (topic, rawMessage, packet) => {
     return;
   }
 
-  const value = destr(message);
-
-  // if value changed or is too old, add it to be written later
-  const previousValue = await storage.getItem("cache/" + topic);
-  const lastWriteTimestamp = (await storage.getMeta("cache/" + topic))
-    ?.lastWrite;
-
-  const valueChanged = previousValue !== value;
-  const lastWriteTooOld =
-    lastWriteTimestamp &&
-    typeof lastWriteTimestamp === "number" &&
-    // write when then last write was too old
-    Date.now() - lastWriteTimestamp > TOO_OLD_MILLISECONDS;
-
-  if (valueChanged || lastWriteTooOld) {
-    await storage.setItem("write/" + topic, message);
-
-    // update cache
-    await storage.setItem("cache/" + topic, message);
-    await storage.setMeta("cache/" + topic, {
-      lastWrite: Date.now(),
-    });
-  }
+  await storage.setItem(`collect/${topic}`, message);
 
   // when the "updated" signal is received, schedule writing
   if (topic.endsWith("/updated")) {
-    setTimeout(() => handleInstanceUpdate(instanceId, message), 2000);
+    setTimeout(() => handleInstanceUpdate(instanceId, message), 1000);
   }
 });
 
@@ -77,13 +54,41 @@ async function handleInstanceUpdate(
   instanceId: string,
   timestamp: string,
 ): Promise<void> {
-  const instanceKeys = await storage.getKeys(`write/evcc/${instanceId}`);
-  const items = await storage
-    .getItems(instanceKeys)
+  const seenItems = await storage
+    .getItems(await storage.getKeys(`collect/evcc/${instanceId}`))
     .then((items) => items.sort((a, b) => a.key.localeCompare(b.key)));
 
-  await writeItemsToInflux({ instanceId, items, timestamp });
-  await Promise.all(items.map((item) => storage.remove(item.key)));
+  const itemsToWrite: { key: string; value: StorageValue }[] = [];
+
+  for (const item of seenItems) {
+    const cacheKey = item.key.replace("collect:", "cache:");
+    const previousValue = await storage.getItem(cacheKey);
+    const lastWriteTimestamp = (await storage.getMeta(cacheKey))?.lastWrite;
+
+    const valueChanged = previousValue !== item.value;
+    const lastWriteTooOld =
+      lastWriteTimestamp &&
+      typeof lastWriteTimestamp === "number" &&
+      // write when then last write was too old
+      Date.now() - lastWriteTimestamp > TOO_OLD_MILLISECONDS;
+
+    if (valueChanged || lastWriteTooOld) {
+      itemsToWrite.push({
+        key: item.key,
+        value: item.value,
+      });
+
+      // update cache
+      await storage.setItem(cacheKey, item.value);
+      await storage.setMeta(cacheKey, {
+        lastWrite: Date.now(),
+      });
+    }
+  }
+
+  await writeItemsToInflux({ instanceId, items: itemsToWrite, timestamp });
+
+  await Promise.all(seenItems.map((item) => storage.remove(item.key)));
 }
 
 async function writeItemsToInflux({

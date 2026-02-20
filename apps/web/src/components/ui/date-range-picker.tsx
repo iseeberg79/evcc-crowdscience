@@ -224,7 +224,22 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
     }
   };
 
-  const checkPreset = (): void => {
+  const resetValues = (): void => {
+    setRange({
+      from: initialDateFrom,
+      to: initialDateTo ?? initialCompareFrom,
+    });
+    setRangeCompare(
+      initialCompareFrom
+        ? {
+            from: initialCompareFrom,
+            to: initialCompareTo ?? initialCompareFrom,
+          }
+        : undefined,
+    );
+  };
+
+  useEffect(() => {
     for (const preset of PRESETS) {
       const presetRange = getPresetRange(preset.name);
 
@@ -250,25 +265,6 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
     }
 
     setSelectedPreset(undefined);
-  };
-
-  const resetValues = (): void => {
-    setRange({
-      from: initialDateFrom,
-      to: initialDateTo ?? initialCompareFrom,
-    });
-    setRangeCompare(
-      initialCompareFrom
-        ? {
-            from: initialCompareFrom,
-            to: initialCompareTo ?? initialCompareFrom,
-          }
-        : undefined,
-    );
-  };
-
-  useEffect(() => {
-    checkPreset();
   }, [range]);
 
   const PresetButton = ({
@@ -310,7 +306,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
       openedRangeRef.current = range;
       openedRangeCompareRef.current = rangeCompare;
     }
-  }, [isOpen]);
+  }, [isOpen, range, rangeCompare]);
 
   return (
     <Popover

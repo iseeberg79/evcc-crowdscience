@@ -26,7 +26,7 @@ function RouteComponent() {
         href="https://solar.htw-berlin.de/"
         target="_blank"
         rel="noopener noreferrer"
-        className="hover:text-primary underline"
+        className="underline hover:text-primary"
       >
         https://solar.htw-berlin.de/
       </a>
@@ -35,7 +35,7 @@ function RouteComponent() {
         E-Mail:{" "}
         <a
           href="mailto:lukas.frey@htw-berlin.de"
-          className="hover:text-primary underline"
+          className="underline hover:text-primary"
         >
           lukas.frey@htw-berlin.de
         </a>

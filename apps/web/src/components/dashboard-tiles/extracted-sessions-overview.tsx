@@ -1,14 +1,23 @@
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { differenceInSeconds } from "date-fns";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
+import { differenceInSeconds, formatDate } from "date-fns";
 import { RefreshCcwIcon, TrashIcon } from "lucide-react";
 
 import { ExpandableDashboardGraph } from "~/components/dashboard-graph";
 import { DataTable } from "~/components/data-table";
 import { ExportLoadingSessionsButton } from "~/components/export-loading-sessions-button";
 import { LoadingButton } from "~/components/ui/button";
-import { formatSecondsInHHMM } from "~/lib/utils";
+import {
+  formatCurrency,
+  formatDuration,
+  formatPercentage,
+  formatUnit,
+} from "~/lib/utils";
 import { orpc } from "~/orpc/client";
-import { loadingSessionApi } from "~/serverHandlers/loadingSession/serverFns";
+import { getSessionUrl } from "~/orpc/loadingSessions/helpers";
 
 export function ExtractedSessions({
   instanceId,
@@ -31,14 +40,17 @@ export function ExtractedSessions({
     }),
   );
 
-  const triggerExtraction = loadingSessionApi.extractSessions.useMutation({
-    onSuccess: invalidateExtractedSessions,
-  });
-
-  const deleteExtractedSessions =
-    loadingSessionApi.deleteExtractedSessions.useMutation({
+  const triggerExtraction = useMutation(
+    orpc.jobs.extractAndSaveSessions.mutationOptions({
       onSuccess: invalidateExtractedSessions,
-    });
+    }),
+  );
+
+  const deleteExtractedSessions = useMutation(
+    orpc.loadingSessions.deleteExtractedSessions.mutationOptions({
+      onSuccess: invalidateExtractedSessions,
+    }),
+  );
 
   return (
     <ExpandableDashboardGraph
@@ -59,57 +71,121 @@ export function ExtractedSessions({
               variant="outline"
               size="icon"
               onClick={() =>
-                triggerExtraction.mutateAsync({ data: { instanceId } })
+                triggerExtraction.mutateAsync({ instanceIds: [instanceId] })
               }
-              icon={<RefreshCcwIcon className="h-4 w-4" />}
+              icon={<RefreshCcwIcon className="size-4" />}
             />
             <LoadingButton
               variant="outline"
               size="icon"
               onClick={() =>
                 deleteExtractedSessions.mutateAsync({
-                  data: { instanceIds: [instanceId] },
+                  instanceIds: [instanceId],
                 })
               }
-              icon={<TrashIcon className="h-4 w-4" />}
+              icon={<TrashIcon className="size-4" />}
             />
             <ExportLoadingSessionsButton data={extractedSessions.data} />
           </div>
 
           <DataTable
             data={extractedSessions.data}
+            onRowDoubleClick={(row) => {
+              window.open(getSessionUrl(row), "_blank");
+            }}
             columns={[
-              { accessorKey: "startTime", header: "Start" },
-              { accessorKey: "endTime", header: "End" },
               {
-                accessorFn: (row) => {
-                  const difference = differenceInSeconds(
-                    row.endTime,
-                    row.startTime,
-                  );
-
-                  return formatSecondsInHHMM(difference);
-                },
-                header: "Total Duration",
+                accessorKey: "startTime",
+                header: "Start",
+                cell: ({ row }) =>
+                  formatDate(
+                    new Date(row.original.startTime),
+                    "dd MMM yyyy - HH:mm:ss",
+                  ),
               },
               {
-                accessorFn: (row) => {
-                  return formatSecondsInHHMM(row.duration);
-                },
+                accessorKey: "endTime",
+                header: "End",
+                cell: ({ row }) =>
+                  formatDate(
+                    new Date(row.original.endTime),
+                    "dd MMM yyyy - HH:mm:ss",
+                  ),
+              },
+              {
+                accessorFn: (row) => formatDuration(row.duration),
                 header: "Active Duration",
               },
+              {
+                accessorFn: (row) =>
+                  formatDuration(
+                    differenceInSeconds(
+                      new Date(row.endTime),
+                      new Date(row.startTime),
+                    ),
+                  ),
+                header: "Total Duration",
+              },
               { accessorKey: "componentId", header: "Component" },
-              { accessorKey: "price", header: "Price" },
-              { accessorKey: "solarPercentage", header: "Solar" },
-              { accessorKey: "maxChargePower", header: "Max Charge Power" },
+              {
+                accessorKey: "price",
+                header: "Price",
+                cell: ({ row }) =>
+                  formatCurrency(row.original.price ?? null, "EUR"),
+              },
+              {
+                accessorKey: "solarPercentage",
+                header: "Solar",
+                cell: ({ row }) =>
+                  formatPercentage(row.original.solarPercentage ?? null),
+              },
+              {
+                accessorKey: "maxChargePower",
+                header: "Max Charge Power",
+                cell: ({ row }) =>
+                  formatUnit(row.original.maxChargePower, "W", 2, true),
+              },
               { accessorKey: "maxPhasesActive", header: "Max Phases Active" },
-              { accessorKey: "startSoc", header: "Start SoC" },
-              { accessorKey: "endSoc", header: "End SoC" },
-              { accessorKey: "startRange", header: "Start Range" },
-              { accessorKey: "endRange", header: "End Range" },
-              { accessorKey: "limitSoc", header: "Limit SoC" },
-              { accessorKey: "chargedEnergy", header: "Charged Energy" },
-              { accessorKey: "sessionEnergy", header: "Session Energy" },
+              {
+                accessorKey: "startSoc",
+                header: "Start SoC",
+                cell: ({ row }) =>
+                  formatPercentage(row.original.startSoc ?? null),
+              },
+              {
+                accessorKey: "endSoc",
+                header: "End SoC",
+                cell: ({ row }) =>
+                  formatPercentage(row.original.endSoc ?? null),
+              },
+              {
+                accessorKey: "startRange",
+                header: "Start Range",
+                cell: ({ row }) => formatUnit(row.original.startRange, "km", 2),
+              },
+              {
+                accessorKey: "endRange",
+                header: "End Range",
+                cell: ({ row }) => formatUnit(row.original.endRange, "km", 2),
+              },
+              {
+                accessorKey: "limitSoc",
+                header: "Limit SoC",
+                cell: ({ row }) =>
+                  formatPercentage(row.original.limitSoc ?? null),
+              },
+              {
+                accessorKey: "chargedEnergy",
+                header: "Charged Energy",
+                cell: ({ row }) =>
+                  formatUnit(row.original.chargedEnergy, "Wh", 1, true),
+              },
+              {
+                accessorKey: "sessionEnergy",
+                header: "Session Energy",
+                cell: ({ row }) =>
+                  formatUnit(row.original.sessionEnergy, "Wh", 2, true),
+              },
             ]}
           />
         </div>

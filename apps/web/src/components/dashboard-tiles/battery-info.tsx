@@ -4,7 +4,7 @@ import { formatUnit } from "~/lib/utils";
 import type { MetaData } from "~/orpc/types";
 import { MetadataGraph } from "../dashboard-graph";
 
-export function calculateBatteryInfo(batteryMetaData: MetaData) {
+function calculateBatteryInfo(batteryMetaData: MetaData) {
   const count = batteryMetaData.count;
   const totalCapacity = sum(
     Object.entries(batteryMetaData.values).map(
@@ -36,7 +36,7 @@ export function BatteryInfo({
             {count} Batter
             {count === 0 || count > 1 ? "ies" : "y"}
           </span>
-          <span className="text-muted-foreground text-sm">
+          <span className="text-sm text-muted-foreground">
             ø {formatUnit(avgCapacity, "kWh", 1)}
           </span>
         </div>

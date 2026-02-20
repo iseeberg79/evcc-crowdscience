@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_public/view-data/")({
 function RouteComponent() {
   const navigate = useNavigate();
   return (
-    <div className="max-w-(--max-content-width) mx-auto grow">
+    <div className="mx-auto max-w-(--max-content-width) grow">
       <PageTitle>Eigene Daten einsehen</PageTitle>
       <form
         className="flex flex-col gap-4"
@@ -31,7 +31,7 @@ function RouteComponent() {
           Noch keine ID? Du kannst deine{" "}
           <Link
             to="/mitmachen"
-            className="text-primary font-bold underline hover:no-underline"
+            className="font-bold text-primary underline hover:no-underline"
           >
             Daten beitragen
           </Link>

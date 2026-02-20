@@ -94,7 +94,7 @@ function RouteComponent() {
       input: { instanceId: instanceId! },
       enabled: Boolean(instanceId) && step > 2,
       select: (data) => {
-        if (!data || differenceInMinutes(new Date(), data) > 3)
+        if (!data || differenceInMinutes(new Date(), new Date(data)) > 3)
           return undefined;
         return data;
       },
@@ -141,7 +141,7 @@ function RouteComponent() {
                 wissenschaftliche Zwecke verwendet.
               </p>
               <div className="mb-4 flex items-center">
-                <div className="items-top flex space-x-2">
+                <div className="flex space-x-2">
                   <Checkbox
                     id="terms1"
                     checked={isChecked}
@@ -337,7 +337,7 @@ function VisualStepInstruction({
   lastInstanceUpdate,
 }: {
   step: number;
-  lastInstanceUpdate?: Date | null;
+  lastInstanceUpdate?: number | null;
 }) {
   if (step === 1)
     return (
@@ -399,7 +399,10 @@ function VisualStepInstruction({
       </H3>
       <p>Danke für deine Mitarbeit!</p>
       {lastInstanceUpdate ? (
-        <p>Letzte empfangene Daten am: {format(lastInstanceUpdate, "PPpp")}</p>
+        <p>
+          Letzte empfangene Daten am:{" "}
+          {format(new Date(lastInstanceUpdate), "PPpp")}
+        </p>
       ) : null}
     </div>
   );

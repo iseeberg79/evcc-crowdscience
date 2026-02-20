@@ -22,9 +22,9 @@ const PasswordInput = React.forwardRef<
         aria-label={showPassword ? "Hide password" : "Show password"}
       >
         {showPassword ? (
-          <EyeOff className="h-4 w-4 text-gray-500" />
+          <EyeOff className="size-4 text-gray-500" />
         ) : (
-          <Eye className="h-4 w-4 text-gray-500" />
+          <Eye className="size-4 text-gray-500" />
         )}
       </Button>
     </div>

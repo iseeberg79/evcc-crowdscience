@@ -31,7 +31,7 @@ export function PublicSiteHeader() {
   const { session } = useAuth();
   return (
     <header className="sticky top-0 z-50 h-16 w-full shrink-0 border-b bg-background px-4 sm:px-6 lg:px-10">
-      <div className="mx-auto flex h-full w-full max-w-(--max-content-width) items-center">
+      <div className="mx-auto flex size-full max-w-(--max-content-width) items-center">
         <IconLink
           to="/"
           title="Go To Home"

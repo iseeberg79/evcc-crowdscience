@@ -1,19 +1,74 @@
-import { os } from "@orpc/server";
 import * as z from "zod";
 
 import { instanceCountsAsActiveDays } from "~/constants";
 import { influxDb } from "~/db/client";
 import { env } from "~/env";
 import { buildFluxQuery } from "~/lib/influx-query";
+import { instanceQuerySchema } from "~/schema/instances";
+import { publicProcedure } from "../middleware";
 import { influxRowBaseSchema, type MetaData } from "../types";
 
-const loadPointMetadataRowSchema = influxRowBaseSchema.extend({
-  componentId: z.string().optional(),
-});
+const loadPointMetadataRowSchema = influxRowBaseSchema
+  .extend({
+    componentId: z.string().optional().describe("Unique component ID (lp-*)"),
+  })
+  .meta({
+    examples: [
+      {
+        componentId: "lp-1",
+        _field: "title",
+        _value: "Wallbox",
+        _time: "2024-01-01T12:00:00Z",
+      },
+    ],
+  });
 
 export const loadpointsRouter = {
-  getMetaData: os
-    .input(z.object({ instanceId: z.string() }))
+  getMetaData: publicProcedure
+    .errors({
+      INFLUX_QUERY_ERROR: {
+        message: "Failed to query loadpoint metadata",
+        status: 500,
+      },
+    })
+    .route({
+      tags: ["Loadpoints"],
+      summary: "Get loadpoint metadata",
+      description:
+        "Retrieves metadata for all charging loadpoints of a specific instance",
+    })
+    .input(instanceQuerySchema)
+    .output(
+      z
+        .object({
+          values: z
+            .record(
+              z.string(),
+              z.record(
+                z.string(),
+                z.object({
+                  value: z.union([z.number(), z.string(), z.boolean()]),
+                  lastUpdate: z.number(),
+                }),
+              ),
+            )
+            .describe("Nested map of componentId -> field -> {value, lastUpdate}"),
+          count: z.number().describe("Total number of loadpoint components"),
+        })
+        .meta({
+          examples: [
+            {
+              values: {
+                "lp-1": {
+                  title: { value: "Main Charger", lastUpdate: 1704110400000 },
+                  chargePower: { value: 11000, lastUpdate: 1704110400000 },
+                },
+              },
+              count: 1,
+            },
+          ],
+        }),
+    )
     .handler(async ({ input }): Promise<MetaData> => {
       const metaData: MetaData = { values: {}, count: 0 };
 
