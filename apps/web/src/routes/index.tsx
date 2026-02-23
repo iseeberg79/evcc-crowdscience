@@ -194,6 +194,8 @@ function Home() {
             </figure>
           </HomePageSection>
 
+          <Separator className="mx-auto w-full max-w-(--max-content-width)" />
+
           {/* Was */}
           <HomePageSection id="was">
             <div className="mx-auto max-w-3xl space-y-6">
