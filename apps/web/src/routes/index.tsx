@@ -153,6 +153,47 @@ function Home() {
 
           <Separator className="mx-auto w-full max-w-(--max-content-width)" />
 
+          {/* Quote from Research */}
+          <HomePageSection className="bg-muted/30">
+            <figure>
+              <svg
+                className="mx-auto mb-6 size-12 text-muted-foreground/50"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                viewBox="0 0 18 14"
+              >
+                <path d="M6 0H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4v1a3 3 0 0 1-3 3H2a1 1 0 0 0 0 2h1a5.006 5.006 0 0 0 5-5V2a2 2 0 0 0-2-2Zm10 0h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4v1a3 3 0 0 1-3 3h-1a1 1 0 0 0 0 2h1a5.006 5.006 0 0 0 5-5V2a2 2 0 0 0-2-2Z" />
+              </svg>
+              <blockquote className="mx-auto max-w-11/12 text-center text-xl/8 font-medium text-balance text-muted-foreground md:max-w-2/3 md:text-2xl">
+                &quot;evcc Crowdscience ist für mich die logische
+                Weiterentwicklung: Open-Source-Software trifft auf
+                Open-Data-Forschung. Aus echtem Nutzungsverhalten entstehen
+                praxisnahe Erkenntnisse, aus denen wir wiederum neue Funktionen
+                und Optimierungen für evcc entwickeln können.&quot;
+              </blockquote>
+              <figcaption className="mt-8">
+                <div className="flex items-center justify-center space-x-4">
+                  <div className="text-center">
+                    <div className="font-semibold">
+                      <a
+                        href="https://geers.tv"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        Michael Geers
+                      </a>
+                    </div>
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      evcc Core Team
+                    </div>
+                  </div>
+                </div>
+              </figcaption>
+            </figure>
+          </HomePageSection>
+
           {/* Was */}
           <HomePageSection id="was">
             <div className="mx-auto max-w-3xl space-y-6">
@@ -393,9 +434,7 @@ function Home() {
               </P>
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Button asChild size="lg" variant="outline">
-                  <a href="mailto:solar@htw-berlin.de">
-                    Kontakt aufnehmen
-                  </a>
+                  <a href="mailto:solar@htw-berlin.de">Kontakt aufnehmen</a>
                 </Button>
                 <Button asChild size="lg" variant="outline">
                   <a
