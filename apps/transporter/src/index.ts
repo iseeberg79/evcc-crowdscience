@@ -1,3 +1,4 @@
+import { appendFile } from "node:fs/promises";
 import { createStorage, type StorageValue } from "unstorage";
 import memoryDriver from "unstorage/drivers/memory";
 
@@ -9,44 +10,79 @@ import { isUuidV7 } from "./lib/uuid";
 
 const TOO_OLD_MILLISECONDS = 1000 * 60 * 10;
 const FILTER_INSTANCE_IDS = Bun.env.FILTER_INSTANCE_IDS !== "false";
+const FAILED_TOPICS_FILE = "failed-topics.log";
 
 const invalidInstanceIds = new Set<string>();
+
+// Track failed topics in memory to avoid duplicate file writes
+const failedTopics = new Set<string>();
+
+// Load existing failed topics from file on startup
+try {
+  const content = await Bun.file(FAILED_TOPICS_FILE).text();
+  for (const line of content.split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed) failedTopics.add(trimmed);
+  }
+} catch {
+  // File doesn't exist yet
+}
+
+async function logFailedTopic(topic: string): Promise<void> {
+  if (failedTopics.has(topic)) return;
+  failedTopics.add(topic);
+  await appendFile(FAILED_TOPICS_FILE, topic + "\n");
+}
 
 const storage = createStorage();
 storage.mount("cache", memoryDriver());
 storage.mount("collect", memoryDriver());
 
 mqttClient.on("connect", () => {
-  console.log("Connected to MQTT broker");
+  console.log("[mqtt] connected");
 });
 
 mqttClient.subscribe("evcc/#");
 mqttClient.on("message", async (topic, rawMessage, packet) => {
-  const message = rawMessage.toString();
-  if (filterTopic(topic) || packet.retain) return;
+  try {
+    const message = rawMessage.toString();
+    if (filterTopic(topic) || packet.retain) return;
 
-  const topicSegments = topic.split("/");
-  const instanceId = topicSegments[1];
+    const topicSegments = topic.split("/");
+    const instanceId = topicSegments[1];
 
-  // skip messages without an instance id
-  if (!instanceId) return;
+    // skip messages without an instance id
+    if (!instanceId) return;
 
-  // make sure the instance id is a valid uuid v7
-  // warn only once per instance id
-  if (FILTER_INSTANCE_IDS && !isUuidV7(instanceId)) {
-    if (!invalidInstanceIds.has(instanceId)) {
-      console.warn("Invalid instance id", instanceId);
-      invalidInstanceIds.add(instanceId);
+    // make sure the instance id is a valid uuid v7
+    // warn only once per instance id
+    if (FILTER_INSTANCE_IDS && !isUuidV7(instanceId)) {
+      if (!invalidInstanceIds.has(instanceId)) {
+        console.warn("[mqtt] invalid instance id:", instanceId);
+        invalidInstanceIds.add(instanceId);
+      }
+
+      return;
     }
 
-    return;
-  }
+    await storage.setItem(`collect/${topic}`, message);
 
-  await storage.setItem(`collect/${topic}`, message);
-
-  // when the "updated" signal is received, schedule writing
-  if (topic.endsWith("/updated")) {
-    setTimeout(() => handleInstanceUpdate(instanceId, message), 1000);
+    // when the "updated" signal is received, schedule writing
+    if (topic.endsWith("/updated")) {
+      setTimeout(() => {
+        handleInstanceUpdate(instanceId, message).catch((error) => {
+          console.error(
+            `[instance-update] failed for ${instanceId}:`,
+            error instanceof Error ? error.message : error,
+          );
+        });
+      }, 1000);
+    }
+  } catch (error) {
+    console.error(
+      "[mqtt] failed to process message:",
+      error instanceof Error ? error.message : error,
+    );
   }
 });
 
@@ -100,26 +136,64 @@ async function writeItemsToInflux({
   items: { key: string; value: StorageValue }[];
   timestamp: string;
 }) {
+  if (items.length === 0) return;
+
   // generate line protocol text for all items
-  const lineProtocol =
-    items
-      .map((item) => {
-        // parse the metric from the key (topic)
-        const metric = parseEvccTopic(item.key.split(":").slice(3).join("/"));
-        if (!metric || !item.value) return null;
+  let parseFailures = 0;
+  const lines = items
+    .map((item) => {
+      // parse the metric from the key (topic)
+      const topic = item.key.split(":").slice(3).join("/");
+      const metric = parseEvccTopic(topic);
+      if (!metric || !item.value) {
+        parseFailures++;
+        console.warn(`[topic-parsing] failed to parse topic: ${topic}`);
+        void logFailedTopic(topic);
+        return null;
+      }
 
-        return toLineProtocol({
-          metric,
-          value: item.value,
-          instanceId,
-          timestamp,
-        });
-      })
-      // filter out values where parsing failed or the value is null
-      .filter(Boolean)
-      // join all line protocol texts with a newline
-      .join("\n") + "\n";
+      return toLineProtocol({
+        metric,
+        value: item.value,
+        instanceId,
+        timestamp,
+      });
+    })
+    // filter out values where parsing failed or the value is null
+    .filter(Boolean);
 
-  console.log(lineProtocol);
-  return influxWriter.write(lineProtocol);
+  if (lines.length === 0) return;
+
+  const lineProtocol = lines.join("\n") + "\n";
+
+  try {
+    await influxWriter.write(lineProtocol);
+    console.log(
+      `[influx-write] ${lines.length} items for instance ${instanceId}` +
+        (parseFailures > 0 ? ` (${parseFailures} topics failed to parse)` : ""),
+    );
+  } catch (error) {
+    console.error(
+      `[influx-write] failed to write ${items.length} items for instance ${instanceId}:`,
+      error instanceof Error ? error.message : error,
+    );
+  }
 }
+
+// Graceful shutdown
+function shutdown(signal: string) {
+  console.log(`[shutdown] received ${signal}, shutting down gracefully...`);
+  mqttClient.end(false, () => {
+    console.log("[shutdown] mqtt disconnected");
+    process.exit(0);
+  });
+
+  // Force exit after 5 seconds if graceful shutdown hangs
+  setTimeout(() => {
+    console.warn("[shutdown] timed out, forcing exit");
+    process.exit(1);
+  }, 5000);
+}
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));

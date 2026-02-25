@@ -30,7 +30,7 @@ class InfluxWriter {
         body: lineProtocol,
         retry: 1,
       })
-      .json();
+      .text();
   }
 
   async delete(start: string, stop: string) {
@@ -49,7 +49,7 @@ class InfluxWriter {
           Authorization: `Token ${this.token}`,
         },
       })
-      .json();
+      .text();
   }
 }
 
