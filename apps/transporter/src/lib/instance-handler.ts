@@ -46,7 +46,7 @@ export async function handleInstanceUpdate(
     }
   }
 
-  await writeItemsToInflux({
+  appendToInfluxBuffer({
     instanceId,
     items: itemsToWrite,
     timestamp,
@@ -56,7 +56,7 @@ export async function handleInstanceUpdate(
   await Promise.all(seenItems.map((item) => storage.remove(item.key)));
 }
 
-async function writeItemsToInflux({
+function appendToInfluxBuffer({
   instanceId,
   items,
   timestamp,
@@ -96,18 +96,9 @@ async function writeItemsToInflux({
 
   if (lines.length === 0) return;
 
-  const lineProtocol = lines.join("\n") + "\n";
-
-  try {
-    await influxWriter.write(lineProtocol);
-    console.log(
-      `[influx-write] ${lines.length} items for instance ${instanceId}` +
-        (parseFailures > 0 ? ` (${parseFailures} topics failed to parse)` : ""),
-    );
-  } catch (error) {
-    console.error(
-      `[influx-write] failed to write ${items.length} items for instance ${instanceId}:`,
-      error instanceof Error ? error.message : error,
-    );
-  }
+  influxWriter.addLines(lines as string[]);
+  console.log(
+    `[influx-buffer] ${lines.length} items for instance ${instanceId} (buffer: ${influxWriter.bufferedLineCount})` +
+      (parseFailures > 0 ? ` (${parseFailures} topics failed to parse)` : ""),
+  );
 }

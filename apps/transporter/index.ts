@@ -1,3 +1,4 @@
+import { influxWriter } from "~/clients/influxdb";
 import { mqttClient } from "~/clients/mqtt";
 import { FailedTopicLogger } from "~/lib/failed-topic-logger";
 import { filterTopic } from "~/lib/filtering";
@@ -54,8 +55,23 @@ mqttClient.on("message", async (topic, rawMessage, packet) => {
 });
 
 // Graceful shutdown
-function shutdown(signal: string) {
+async function shutdown(signal: string) {
   console.log(`[shutdown] received ${signal}, shutting down gracefully...`);
+
+  influxWriter.dispose();
+
+  try {
+    const flushed = await influxWriter.flush();
+    if (flushed > 0) {
+      console.log(`[shutdown] flushed ${flushed} buffered lines to InfluxDB`);
+    }
+  } catch (error) {
+    console.error(
+      "[shutdown] failed to flush InfluxDB buffer:",
+      error instanceof Error ? error.message : error,
+    );
+  }
+
   mqttClient.end(false, () => {
     console.log("[shutdown] mqtt disconnected");
 
