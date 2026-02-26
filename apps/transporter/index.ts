@@ -5,8 +5,8 @@ import memoryDriver from "unstorage/drivers/memory";
 import { influxWriter, toLineProtocol } from "~/clients/influxdb";
 import { mqttClient } from "~/clients/mqtt";
 import { parseEvccTopic } from "~/lib/evcc-topic-parser";
-import { filterTopic } from "./lib/filtering";
-import { isUuidV7 } from "./lib/uuid";
+import { filterTopic } from "./src/lib/filtering";
+import { isUuidV7 } from "./src/lib/uuid";
 
 const TOO_OLD_MILLISECONDS = 1000 * 60 * 10;
 const FILTER_INSTANCE_IDS = Bun.env.FILTER_INSTANCE_IDS !== "false";
@@ -31,7 +31,11 @@ try {
 async function logFailedTopic(topic: string): Promise<void> {
   if (failedTopics.has(topic)) return;
   failedTopics.add(topic);
-  await appendFile(FAILED_TOPICS_FILE, topic + "\n");
+  try {
+    await appendFile(FAILED_TOPICS_FILE, topic + "\n");
+  } catch (error) {
+    console.error(`[log-failed-topic] failed for ${topic}:`, error);
+  }
 }
 
 const storage = createStorage();
@@ -143,12 +147,19 @@ async function writeItemsToInflux({
   const lines = items
     .map((item) => {
       // parse the metric from the key (topic)
-      const topic = item.key.split(":").slice(3).join("/");
+      // the key is in the format collect:evcc:instanceId:topic
+      const topic = item.key
+        .replace(`collect:evcc:${instanceId}:`, "")
+        .replace(/:/g, "/");
       const metric = parseEvccTopic(topic);
-      if (!metric || !item.value) {
+      if (!metric) {
         parseFailures++;
         console.warn(`[topic-parsing] failed to parse topic: ${topic}`);
         void logFailedTopic(topic);
+        return null;
+      }
+
+      if (!item.value) {
         return null;
       }
 

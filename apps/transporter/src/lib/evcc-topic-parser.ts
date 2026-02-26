@@ -27,17 +27,44 @@ const parserConfigs: TopicParsingConfig[] = [
     interpretation: "measurement/componentId/field/phase",
     mustHash: ["componentId"],
   },
+  // effectivePlanStrategy (remapped to old field names)
+  {
+    topic: "loadpoints/+/effectivePlanStrategy/precondition",
+    fieldName: "effectivePlanPrecondition",
+    interpretation: "measurement/componentId/_/_",
+    mustHash: ["componentId"],
+  },
+  {
+    topic: "loadpoints/+/effectivePlanStrategy/continuous",
+    fieldName: "effectivePlanContinuous",
+    interpretation: "measurement/componentId/_/_",
+    mustHash: ["componentId"],
+  },
 
   // site
   {
     topic: "site/+",
     interpretation: "measurement/field",
   },
+
+  // battery (pre-0.301.0)
   {
     topic: "site/battery/+/+",
     interpretation: "_/measurement/componentId/field",
     mustHash: ["componentId"],
   },
+  // battery (new format in 0.301.0)
+  {
+    topic: "site/battery/+",
+    interpretation: "_/measurement/field",
+  },
+  {
+    topic: "site/battery/devices/+/+",
+    interpretation: "_/measurement/_/componentId/field",
+    mustHash: ["componentId"],
+  },
+
+  // grid
   {
     topic: "site/grid/+",
     interpretation: "_/measurement/field",
@@ -52,19 +79,32 @@ const parserConfigs: TopicParsingConfig[] = [
     interpretation: "_/measurement/field/gridId",
     mustHash: ["gridId"],
   },
+
+  // statistics
   {
     topic: "site/statistics/+/+",
     interpretation: "_/measurement/period/field",
   },
+
+  // pv
   {
     topic: "site/pv/+/+",
     interpretation: "_/measurement/componentId/field",
     mustHash: ["componentId"],
   },
+
+  // circuits
   {
     topic: "site/circuits/+/+",
     interpretation: "_/measurement/circuitId/field",
     mustHash: ["circuitId"],
+  },
+
+  // ext
+  {
+    topic: "site/ext/+/+",
+    interpretation: "_/measurement/componentId/field",
+    mustHash: ["componentId"],
   },
 
   // vehicles
