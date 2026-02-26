@@ -9,6 +9,7 @@ export function filterTopic(topic: string): boolean {
     "site/network/",
     "site/shm/",
     "site/sponsor/",
+    "site/authProviders/",
   ];
   if (configPrefixes.some((prefix) => topic.startsWith(prefix))) return true;
 
