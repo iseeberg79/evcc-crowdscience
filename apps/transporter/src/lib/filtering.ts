@@ -3,15 +3,21 @@ export function filterTopic(topic: string): boolean {
   const configPrefixes = [
     "site/config",
     "site/database",
+    "site/eebus/",
     "site/hems/",
     "site/influx/",
+    "site/messaging/",
+    "site/modbusproxy/",
     "site/mqtt/",
     "site/network/",
+    "site/ocpp/",
     "site/shm/",
     "site/sponsor/",
+    "site/tariffs/",
     "site/authProviders/",
   ];
-  if (configPrefixes.some((prefix) => topic.startsWith(prefix))) return true;
+  const topicSuffix = topic.replace(/^evcc\/[^/]+\//, "");
+  if (configPrefixes.some((prefix) => topicSuffix.startsWith(prefix))) return true;
 
   // Filter invalid substrings
   const invalidSubstrings = [
