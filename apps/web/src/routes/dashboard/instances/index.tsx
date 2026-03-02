@@ -71,6 +71,11 @@ function RouteComponent() {
             header: "First Update",
           },
           {
+            accessorKey: "siteVersion",
+            header: "Version",
+            cell: ({ row }) => row.original.siteVersion ?? "--",
+          },
+          {
             accessorKey: "actions",
             header: "Actions",
             cell: ({ row }) => (

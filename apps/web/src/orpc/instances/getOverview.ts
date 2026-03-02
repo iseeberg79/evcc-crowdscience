@@ -11,6 +11,7 @@ import { authedProcedure } from "../middleware";
 
 export type InfluxDbInstance = {
   lastUpdate?: number;
+  siteVersion?: string;
   pvMaxPowerKw?: number;
   loadpointMaxPowerKw?: number;
 };
@@ -48,6 +49,13 @@ export async function getActiveInfluxDbInstances({
       _value: z.number(),
       instance: z.string(),
     }),
+    z.object({
+      result: z.literal("site"),
+      _value: z.string(),
+      instance: z.string(),
+      _measurement: z.literal("site"),
+      _field: z.literal("version"),
+    }),
   ]);
 
   const query = buildFluxQuery(
@@ -61,6 +69,14 @@ export async function getActiveInfluxDbInstances({
           |> filter(fn: (r) => strings.containsStr(v: r["instance"], substr: {{idFilter}}))
           |> yield(name: "last-update")
   
+        from(bucket: {{bucket}})
+          |> range(start: -30d)
+          |> filter(fn: (r) => r["_measurement"] == "site")
+          |> filter(fn: (r) => r["_field"] == "version")
+          |> last()
+          |> filter(fn: (r) => strings.containsStr(v: r["instance"], substr: {{idFilter}}))
+          |> yield(name: "site")
+
         from(bucket: {{bucket}})
           |> range(start: -365d)
           |> filter(fn: (r) => r["_measurement"] == "pv")
@@ -114,6 +130,9 @@ export async function getActiveInfluxDbInstances({
         case "loadpoint-capacity":
           instance.loadpointMaxPowerKw = data._value;
           break;
+        case "site":
+          instance.siteVersion = data._value;
+          break;
       }
 
       instances.set(data.instance, instance);
@@ -132,6 +151,7 @@ export type InstanceOverview = {
   firstReceivedDataAt: number | null;
   pvMaxPowerKw?: number;
   loadpointMaxPowerKw?: number;
+  siteVersion?: string;
 };
 export type InstancesOverview = InstanceOverview[];
 
@@ -172,6 +192,10 @@ export const getInstancesOverview = authedProcedure
             .number()
             .optional()
             .describe("Maximum loadpoint power in kW found in history"),
+          siteVersion: z
+            .string()
+            .optional()
+            .describe("Site version found in history"),
         }),
       )
       .meta({
@@ -184,6 +208,7 @@ export const getInstancesOverview = authedProcedure
               firstReceivedDataAt: 1704024000000,
               pvMaxPowerKw: 5.5,
               loadpointMaxPowerKw: 11.0,
+              siteVersion: "0.301.2",
             },
           ],
         ],
