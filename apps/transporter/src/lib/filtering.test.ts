@@ -59,6 +59,40 @@ describe("filterTopic", () => {
     });
   });
 
+  describe("filters config prefix topics", () => {
+    test("filters site/config with instance id prefix", () => {
+      expect(
+        filterTopic("evcc/019a4a4f-474e-7000-95fa-abe87e05a515/site/config"),
+      ).toBe(true);
+      expect(filterTopic("site/config")).toBe(true);
+    });
+
+    test("filters site/database with instance id prefix", () => {
+      expect(
+        filterTopic("evcc/019a4a4f-474e-7000-95fa-abe87e05a515/site/database"),
+      ).toBe(true);
+      expect(filterTopic("site/database")).toBe(true);
+    });
+
+    test("filters site/mqtt with instance id prefix", () => {
+      expect(
+        filterTopic(
+          "evcc/019a4a4f-474e-7000-95fa-abe87e05a515/site/mqtt/password",
+        ),
+      ).toBe(true);
+      expect(filterTopic("site/mqtt/password")).toBe(true);
+    });
+
+    test("filters site/network with instance id prefix", () => {
+      expect(
+        filterTopic(
+          "evcc/019a4a4f-474e-7000-95fa-abe87e05a515/site/network/ip",
+        ),
+      ).toBe(true);
+      expect(filterTopic("site/network/ip")).toBe(true);
+    });
+  });
+
   describe("returns false for valid topics", () => {
     test("allows loadpoints topics", () => {
       expect(
