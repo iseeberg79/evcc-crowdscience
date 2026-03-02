@@ -57,6 +57,9 @@ export const Route = createFileRoute("/dashboard/instances/$instanceId/")({
       orpc.sites.getMetaDataValues.queryOptions({ input: { instanceId } }),
       orpc.vehicles.getMetaData.queryOptions({ input: { instanceId } }),
       orpc.batteries.getMetaData.queryOptions({ input: { instanceId } }),
+      orpc.instances.getOverview.queryOptions({
+        input: { idFilter: instanceId },
+      }),
     ];
 
     await Promise.allSettled(
