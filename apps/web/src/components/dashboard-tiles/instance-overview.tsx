@@ -4,6 +4,7 @@ import { CopyableText } from "~/components/copyable-text";
 import { formatUnit } from "~/lib/utils";
 import { orpc } from "~/orpc/client";
 import { Card, CardContent } from "../ui/card";
+import { calculateBatteryInfo } from "./battery-info";
 
 export function InstanceOverview({
   className,
@@ -15,9 +16,12 @@ export function InstanceOverview({
   const { data: statistics } = useSuspenseQuery(
     orpc.sites.getStatistics.queryOptions({ input: { instanceId } }),
   );
-  // const { data: instance } = useSuspenseQuery(
-  //   orpc.instances.getById.queryOptions({ input: { id: instanceId } }),
-  // );
+  const { data: instance } = useSuspenseQuery(
+    orpc.instances.getOverview.queryOptions({
+      input: { idFilter: instanceId },
+      select: (data) => data[0] ?? null,
+    }),
+  );
 
   const { data: loadingSessions } = useSuspenseQuery(
     orpc.loadingSessions.getExtractedSessions.queryOptions({
@@ -25,9 +29,13 @@ export function InstanceOverview({
     }),
   );
 
-  // const { data: batteryMetaData } = useSuspenseQuery(
-  //   orpc.batteries.getMetaData.queryOptions({ input: { instanceId } }),
-  // );
+  const { data: batteryMetaData } = useSuspenseQuery(
+    orpc.batteries.getMetaData.queryOptions({ input: { instanceId } }),
+  );
+
+  const batteryInfo = batteryMetaData
+    ? calculateBatteryInfo(batteryMetaData)
+    : null;
 
   return (
     <Card className={className}>
@@ -64,19 +72,18 @@ export function InstanceOverview({
               )}
             />
           ) : null}
-          {/* {instance.pvMaxPowerKw ? (
+          {instance.pvMaxPowerKw ? (
             <InstanceOverviewInfo
               title="PV Capacity"
               subtitle="(max in 365d)"
               value={formatUnit(instance.pvMaxPowerKw, "kW", 1)}
             />
-          ) : null} */}
-          {/* <InstanceOverviewInfo
+          ) : null}
+          <InstanceOverviewInfo
             title="Battery Capacity"
             subtitle="(total)"
-            value={formatUnit(batteryMetaData.data.totalCapacity, "kWh", 1)}
-          /> */}
-
+            value={formatUnit(batteryInfo?.totalCapacity ?? 0, "kWh", 1)}
+          />
         </div>
       </CardContent>
     </Card>

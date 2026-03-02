@@ -141,6 +141,7 @@ export async function getActiveInfluxDbInstances({
     console.error("InfluxDB query error:", error);
     return instances;
   }
+
   return instances;
 }
 
@@ -226,6 +227,7 @@ export const getInstancesOverview = authedProcedure
     const influxDbInstances = await getActiveInfluxDbInstances({
       idFilter: input?.idFilter,
     });
+
 
     return persistedInstances
       .map((instance) => {

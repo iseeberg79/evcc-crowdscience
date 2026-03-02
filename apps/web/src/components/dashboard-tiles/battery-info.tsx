@@ -4,7 +4,7 @@ import { formatUnit } from "~/lib/utils";
 import type { MetaData } from "~/orpc/types";
 import { MetadataGraph } from "../dashboard-graph";
 
-function calculateBatteryInfo(batteryMetaData: MetaData) {
+export function calculateBatteryInfo(batteryMetaData: MetaData) {
   const count = batteryMetaData.count;
   const totalCapacity = sum(
     Object.entries(batteryMetaData.values).map(

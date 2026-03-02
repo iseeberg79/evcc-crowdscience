@@ -187,7 +187,7 @@ function RouteComponent() {
       <MetadataGraph
         title="Site Metadata"
         expandKey="site-metadata"
-        mainContent={<div>{siteMetaData.data?.siteTitle?.value}</div>}
+        mainContent={<div>{siteMetaData.data?.version?.value}</div>}
         metaData={{
           count: 1,
           values: { "Instance Site": siteMetaData.data },
