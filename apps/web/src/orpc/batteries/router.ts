@@ -199,7 +199,7 @@ export const batteriesRouter = {
 
       from(bucket: {{bucket}})
         |> range(start: {{rangeStart}})
-        |> filter(fn: (r) => r["_measurement"] == "battery")
+        |> filter(fn: (r) => r["_measurement"] == "battery" and exists r["componentId"])
         |> last()
         ${input.instanceIds?.length ? `|> filter(fn: (r) => contains(value: r["instance"], set: instanceIds))` : ""}
       `,
@@ -215,7 +215,7 @@ export const batteriesRouter = {
 
           const parsedRow = rowSchema.safeParse(row);
           if (!parsedRow.success) {
-            console.error(parsedRow.error);
+            console.error(parsedRow.error, row);
             continue;
           }
 

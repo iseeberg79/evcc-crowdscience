@@ -61,8 +61,8 @@ function formatFluxValue(
 
 type ExtractPlaceholders<T extends string> =
   T extends `${string}{{${infer P}}}${infer Rest}`
-    ? P | ExtractPlaceholders<Rest>
-    : never;
+  ? P | ExtractPlaceholders<Rest>
+  : never;
 
 type ParamsFromTemplate<T extends string> = Record<
   ExtractPlaceholders<T>,
@@ -163,7 +163,7 @@ export async function queryInflux<T extends z.ZodTypeAny>(
       }
     }
   } catch (error) {
-    console.error("InfluxDB query error:", error);
+    console.error("InfluxDB query error:\n", query, "\n", error);
     return [];
   }
 

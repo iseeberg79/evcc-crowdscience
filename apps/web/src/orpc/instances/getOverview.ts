@@ -217,7 +217,7 @@ export const getInstancesOverview = authedProcedure
       })
       .sort(
         (a, b) =>
-          (b.lastReceivedDataAt?.getTime() ?? 0) -
-          (a.lastReceivedDataAt?.getTime() ?? 0),
+          (b.firstReceivedDataAt?.getTime() ?? 0) -
+          (a.firstReceivedDataAt?.getTime() ?? 0),
       );
   });
