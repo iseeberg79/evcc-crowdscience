@@ -41,11 +41,18 @@ export function CopyableText({
             className={cn(
               "relative inline-flex items-center gap-1 space-x-1 rounded-sm border border-gray-200 bg-background px-2 py-1 font-mono text-sm",
               "cursor-pointer hover:bg-gray-200",
-              className,
             )}
             onClick={copyToClipboard}
           >
-            <span>{text}</span>
+            <pre
+              className={cn(
+                "m-0 w-full overflow-auto text-sm whitespace-pre-wrap",
+                className,
+              )}
+            >
+              {text}
+            </pre>
+
             <Button
               variant="ghost"
               size="icon"
