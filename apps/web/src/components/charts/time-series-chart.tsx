@@ -190,7 +190,7 @@ export function InstanceTimeSeriesEcharts({
 
           return {
             name,
-            type: "line",
+            type: timeRange.windowMinutes > 0 ? "line" : "scatter",
             showSymbol: false,
             connectNulls: false,
             lineStyle: {
