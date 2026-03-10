@@ -7,14 +7,6 @@ import { PartyPopperIcon } from "lucide-react";
 import Confetti from "react-confetti-boom";
 import * as z from "zod";
 
-import homeassistantInstruction1 from "~/assets/instructions/homeassistant-instruction-1.png";
-import homeassistantInstruction2 from "~/assets/instructions/homeassistant-instruction-2.png";
-import homeassistantInstruction3 from "~/assets/instructions/homeassistant-instruction-3.png";
-import homeassistantInstruction4 from "~/assets/instructions/homeassistant-instruction-4.png";
-import mqttInstruction1 from "~/assets/instructions/mqtt-instruction-1.png";
-import mqttInstruction2 from "~/assets/instructions/mqtt-instruction-2.png";
-import mqttInstruction3 from "~/assets/instructions/mqtt-instruction-3.png";
-import mqttInstruction4 from "~/assets/instructions/mqtt-instruction-4.png";
 import { CopyableText } from "~/components/copyable-text";
 import { PrivacyText } from "~/components/privacy-text";
 import {
@@ -34,6 +26,18 @@ import { Checkbox } from "~/components/ui/checkbox";
 import { H3, PageTitle } from "~/components/ui/typography";
 import { cn } from "~/lib/utils";
 import { orpc } from "~/orpc/client";
+import homeassistantInstruction1 from "../../assets/instructions/homeassistant-instruction-1.png";
+import homeassistantInstruction2 from "../../assets/instructions/homeassistant-instruction-2.png";
+import homeassistantInstruction3 from "../../assets/instructions/homeassistant-instruction-3.png";
+import homeassistantInstruction4 from "../../assets/instructions/homeassistant-instruction-4.png";
+import linuxInstruction1 from "../../assets/instructions/linux-instruction-1.png";
+import linuxInstruction2 from "../../assets/instructions/linux-instruction-2.png";
+import linuxInstruction3 from "../../assets/instructions/linux-instruction-3.png";
+import linuxInstruction4 from "../../assets/instructions/linux-instruction-4.png";
+import mqttInstruction1 from "../../assets/instructions/mqtt-instruction-1.png";
+import mqttInstruction2 from "../../assets/instructions/mqtt-instruction-2.png";
+import mqttInstruction3 from "../../assets/instructions/mqtt-instruction-3.png";
+import mqttInstruction4 from "../../assets/instructions/mqtt-instruction-4.png";
 
 export const Route = createFileRoute("/_public/mitmachen")({
   component: RouteComponent,
@@ -272,6 +276,10 @@ function RouteComponent() {
                 </div>
               ) : (
                 <div className="space-y-3">
+                  <p className="italic">
+                    Damit wir deine Daten erhalten können musst du eine Bridge
+                    einrichten, die die evcc-Daten weiterleitet.
+                  </p>
                   <p className="leading-loose">
                     Verwendest du evcc unter Linux oder in Home Assistant
                     (Mosquitto Add-on)?
@@ -308,7 +316,7 @@ function RouteComponent() {
                       Erstelle die Datei{" "}
                       <span className="font-bold">bridge-evcc.conf</span>:
                       <CopyableText
-                        className="max-h-10"
+                        className="max-h-18"
                         text={`connection evcc-crowdscience
 address mqtt-native.evcc-crowdscience.de:8883
 
@@ -330,6 +338,15 @@ cleansession true`}
                     {usesLinux ? (
                       <>
                         <li>
+                          Falls du nicht das Standardtopic{" "}
+                          <span className="font-bold">evcc/</span> verwendest,
+                          muss Zeile 10 angepasst werden:
+                          <CopyableText
+                            text={`topic # out 1 <your-topic> evcc/${instanceId!}/`}
+                            language="de"
+                          />
+                        </li>
+                        <li>
                           Datei nach{" "}
                           <span className="font-bold">
                             /etc/mosquitto/conf.d/bridge-evcc.conf
@@ -347,12 +364,22 @@ cleansession true`}
                     ) : (
                       <>
                         <li>
+                          Falls du nicht das Standardtopic{" "}
+                          <span className="font-bold">evcc/</span> verwendest,
+                          muss Zeile 10 angepasst werden:
+                          <CopyableText
+                            text={`topic # out 1 <your-topic> evcc/${instanceId!}/`}
+                            language="de"
+                          />
+                        </li>
+                        <li>
                           Datei unter{" "}
                           <span className="font-bold">
                             /share/mosquitto/bridge-evcc.conf
                           </span>{" "}
                           ablegen.
                         </li>
+
                         <li>
                           Unter Settings → Apps (Add-ons) → Mosquitto broker →
                           Configuration
@@ -501,37 +528,70 @@ function VisualStepInstruction({
       <div className="relative flex max-h-[70vh] min-h-72 w-full flex-col items-center gap-4">
         <H3>Anleitung</H3>
         <Carousel className="relative w-full">
-          {hasBrokerAlready && !usesLinux ? (
-            <CarouselContent>
-              <CarouselItem className="flex items-center justify-center">
-                <img
-                  src={homeassistantInstruction1}
-                  alt="Gehe in die Apps Einstellungen"
-                  className="max-h-[50vh] rounded-lg object-contain"
-                />
-              </CarouselItem>
-              <CarouselItem className="flex items-center justify-center">
-                <img
-                  src={homeassistantInstruction2}
-                  alt="Klicke auf Mosquitto broker"
-                  className="max-h-[50vh] rounded-lg object-contain"
-                />
-              </CarouselItem>
-              <CarouselItem className="flex items-center justify-center">
-                <img
-                  src={homeassistantInstruction3}
-                  alt="Klicke auf Konfiguration"
-                  className="max-h-[50vh] rounded-lg object-contain"
-                />
-              </CarouselItem>
-              <CarouselItem className="flex items-center justify-center">
-                <img
-                  src={homeassistantInstruction4}
-                  alt="Aktiviere Customize und speichere"
-                  className="max-h-[50vh] rounded-lg object-contain"
-                />
-              </CarouselItem>
-            </CarouselContent>
+          {hasBrokerAlready ? (
+            usesLinux ? (
+              <CarouselContent>
+                <CarouselItem className="flex items-center justify-center">
+                  <img
+                    src={linuxInstruction1}
+                    alt="Linux: bridge-evcc.conf erstellen"
+                    className="max-h-[50vh] w-3/4 rounded-lg object-contain"
+                  />
+                </CarouselItem>
+                <CarouselItem className="flex items-center justify-center">
+                  <img
+                    src={linuxInstruction2}
+                    alt="Linux: Text in bridge-evcc.conf einfügen"
+                    className="max-h-[50vh] w-3/4 rounded-lg object-contain"
+                  />
+                </CarouselItem>
+                <CarouselItem className="flex items-center justify-center">
+                  <img
+                    src={linuxInstruction3}
+                    alt="Linux: Datei nach /etc/mosquitto/conf.d/ kopieren"
+                    className="max-h-[50vh] w-3/4 rounded-lg object-contain"
+                  />
+                </CarouselItem>
+                <CarouselItem className="flex items-center justify-center">
+                  <img
+                    src={linuxInstruction4}
+                    alt="Linux: Mosquitto neu starten"
+                    className="max-h-[50vh] w-3/4 rounded-lg object-contain"
+                  />
+                </CarouselItem>
+              </CarouselContent>
+            ) : (
+              <CarouselContent>
+                <CarouselItem className="flex items-center justify-center">
+                  <img
+                    src={homeassistantInstruction1}
+                    alt="Gehe in die Apps Einstellungen"
+                    className="max-h-[50vh] rounded-lg object-contain"
+                  />
+                </CarouselItem>
+                <CarouselItem className="flex items-center justify-center">
+                  <img
+                    src={homeassistantInstruction2}
+                    alt="Klicke auf Mosquitto broker"
+                    className="max-h-[50vh] rounded-lg object-contain"
+                  />
+                </CarouselItem>
+                <CarouselItem className="flex items-center justify-center">
+                  <img
+                    src={homeassistantInstruction3}
+                    alt="Klicke auf Konfiguration"
+                    className="max-h-[50vh] rounded-lg object-contain"
+                  />
+                </CarouselItem>
+                <CarouselItem className="flex items-center justify-center">
+                  <img
+                    src={homeassistantInstruction4}
+                    alt="Aktiviere Customize und speichere"
+                    className="max-h-[50vh] rounded-lg object-contain"
+                  />
+                </CarouselItem>
+              </CarouselContent>
+            )
           ) : (
             <CarouselContent>
               <CarouselItem className="flex items-center justify-center">
