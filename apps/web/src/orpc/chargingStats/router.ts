@@ -3,7 +3,11 @@ import * as z from "zod";
 
 import { env } from "~/env";
 import { instanceIdsFilterSchema } from "~/lib/globalSchemas";
-import { buildFluxQuery, queryInflux } from "~/lib/influx-query";
+import {
+  buildFluxInstanceFilter,
+  buildFluxQuery,
+  queryInflux,
+} from "~/lib/influx-query";
 import { authedProcedure } from "../middleware";
 
 export const chargingStatsRouter = {
@@ -31,8 +35,8 @@ export const chargingStatsRouter = {
           examples: [
             {
               "018f3d4a-5b6c-7d8e-af01-23456789abcd": [
-                0, 0, 0, 0, 0, 0, 2, 5, 10, 8, 4, 2, 1, 0, 0, 0, 3, 7, 12, 15, 8,
-                4, 1, 0,
+                0, 0, 0, 0, 0, 0, 2, 5, 10, 8, 4, 2, 1, 0, 0, 0, 3, 7, 12, 15,
+                8, 4, 1, 0,
               ],
             },
           ],
@@ -41,34 +45,22 @@ export const chargingStatsRouter = {
     .handler(async ({ input }) => {
       const res: Record<string, number[]> = {};
       const rowSchema = z.object({
-        _value: z.number(),
-        le: z.number().catch(0),
+        _time: z.coerce.date(),
         instance: z.string(),
       });
+      const { fluxFilter, instanceIdsSet } = buildFluxInstanceFilter(
+        input.instanceIds,
+      );
 
-      // Note: instanceIds array is serialized as JSON in the query string
-      // This is safe because JSON.stringify properly escapes the values
-      const instanceIdsJson = JSON.stringify(input.instanceIds ?? []);
       const query = buildFluxQuery(
         `
-      import "date"
-      import "array"
-      instanceIds = ${instanceIdsJson}
-
       from(bucket: {{bucket}})
         |> range(start: -30d)
         |> filter(fn: (r) => r["_measurement"] == "loadpoints" and r["_field"] == "chargeCurrents" and not exists r.phase)
-        |> window(every: 1h, createEmpty: false)
-        |> max()
-        ${input.instanceIds?.length ? `|> filter(fn: (r) => contains(value: r["instance"], set: instanceIds))` : ""}
-        |> group(columns: ["instance"])
+        ${fluxFilter}
+        |> aggregateWindow(every: 1h, fn: max, createEmpty: false)
         |> filter(fn: (r) => r["_value"] > 0)
-        |> map(fn: (r) => ({
-            r with
-            floatHour: float(v: date.hour(t: r._time))
-          }))
-        |> histogram(bins: linearBins(count: 24, width: 1.0, start: 0.0, infinity: false), column: "floatHour")
-        |> group(columns: ["le"])
+        |> keep(columns: ["_time", "instance"])
     `,
         {
           bucket: env.INFLUXDB_BUCKET,
@@ -76,21 +68,17 @@ export const chargingStatsRouter = {
       );
 
       await queryInflux(query, rowSchema, (row) => {
+        if (instanceIdsSet && !instanceIdsSet.has(row.instance)) {
+          return;
+        }
+
         if (!res[row.instance]) {
-          res[row.instance] = [];
+          res[row.instance] = Array.from({ length: 24 }, () => 0);
         }
-        if (row.le <= 23) {
-          res[row.instance].push(row._value);
-        }
+
+        res[row.instance][row._time.getUTCHours()] += 1;
       });
 
-      // go over every instance and calculate the difference between the values
-      // from behind, leave first as it is
-      for (const instance in res) {
-        for (let i = res[instance].length - 1; i > 0; i--) {
-          res[instance][i] = res[instance][i] - res[instance][i - 1];
-        }
-      }
       return Object.fromEntries(
         Object.entries(res).sort((a, b) => sum(b[1]) - sum(a[1])),
       );

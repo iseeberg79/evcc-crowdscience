@@ -59,10 +59,33 @@ function formatFluxValue(
   throw new Error(`Unsupported value type: ${typeof value}`);
 }
 
+const maxFluxInstanceFilters = 10;
+
+export function buildFluxInstanceFilter(instanceIds?: string[]) {
+  const shouldFilterInMemory =
+    !!instanceIds?.length && instanceIds.length > maxFluxInstanceFilters;
+
+  if (!instanceIds?.length || shouldFilterInMemory) {
+    return {
+      fluxFilter: "",
+      instanceIdsSet: shouldFilterInMemory ? new Set(instanceIds) : null,
+    };
+  }
+
+  const conditions = instanceIds.map(
+    (instanceId) => `r["instance"] == ${formatFluxValue(instanceId)}`,
+  );
+
+  return {
+    fluxFilter: `|> filter(fn: (r) => ${conditions.join(" or ")})`,
+    instanceIdsSet: null,
+  };
+}
+
 type ExtractPlaceholders<T extends string> =
   T extends `${string}{{${infer P}}}${infer Rest}`
-  ? P | ExtractPlaceholders<Rest>
-  : never;
+    ? P | ExtractPlaceholders<Rest>
+    : never;
 
 type ParamsFromTemplate<T extends string> = Record<
   ExtractPlaceholders<T>,
