@@ -19,10 +19,16 @@ export const Route = createFileRoute("/_public/view-data/$instanceId/")({
     ensureDefaultMeasurementField(search.measurement, search.field);
   },
   loader: async ({ context, params }) => {
+    const instanceId = params.instanceId;
     const queryOptions = [
       orpc.sites.getMetaDataValues.queryOptions({
-        input: { instanceId: params.instanceId },
+        input: { instanceId },
       }),
+      orpc.vehicles.getMetaData.queryOptions({ input: { instanceId } }),
+      orpc.loadpoints.getMetaData.queryOptions({ input: { instanceId } }),
+      orpc.pv.getMetaData.queryOptions({ input: { instanceId } }),
+      orpc.batteries.getMetaData.queryOptions({ input: { instanceId } }),
+      orpc.sites.getStatistics.queryOptions({ input: { instanceId } }),
     ];
     await Promise.allSettled(
       queryOptions.map((queryOption) =>
