@@ -4,7 +4,7 @@ import { instanceCountsAsActiveDays } from "~/constants";
 import { influxDb } from "~/db/client";
 import { env } from "~/env";
 import { instanceIdsFilterSchema } from "~/lib/globalSchemas";
-import { buildFluxQuery } from "~/lib/influx-query";
+import { buildFluxInstanceFilter, buildFluxQuery } from "~/lib/influx-query";
 import { instanceQuerySchema } from "~/schema/instances";
 import { publicProcedure } from "../middleware";
 import { influxRowBaseSchema, type MetaData } from "../types";
@@ -191,17 +191,16 @@ export const batteriesRouter = {
         >
       > = {};
 
-      const instanceIdsJson = JSON.stringify(input.instanceIds ?? []);
+      const { fluxFilter, instanceIdsSet } = buildFluxInstanceFilter(
+        input.instanceIds,
+      );
       const query = buildFluxQuery(
         `
-      import "array"
-      instanceIds = ${instanceIdsJson}
-
       from(bucket: {{bucket}})
         |> range(start: {{rangeStart}})
         |> filter(fn: (r) => r["_measurement"] == "battery" and exists r["componentId"])
         |> last()
-        ${input.instanceIds?.length ? `|> filter(fn: (r) => contains(value: r["instance"], set: instanceIds))` : ""}
+        ${fluxFilter}
       `,
         {
           bucket: env.INFLUXDB_BUCKET,
@@ -216,6 +215,10 @@ export const batteriesRouter = {
           const parsedRow = rowSchema.safeParse(row);
           if (!parsedRow.success) {
             console.error(parsedRow.error, row);
+            continue;
+          }
+
+          if (instanceIdsSet && !instanceIdsSet.has(parsedRow.data.instance)) {
             continue;
           }
 
